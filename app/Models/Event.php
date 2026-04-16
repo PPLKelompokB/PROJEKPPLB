@@ -4,19 +4,22 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class User extends Model
+class Event extends Model
 {
     protected $fillable = [
-        'name', 'email', 'password', 'role', 'photo', 'phone'
+        'organizer_id', 'title', 'description', 'location', 'date', 'duration', 'quota'
     ];
 
-    // Relasi: user daftar event
+    public function participants()
+    {
+        return $this->hasMany(EventRegistration::class)->with('user');
+    }
+    
     public function registrations()
     {
         return $this->hasMany(EventRegistration::class);
     }
 
-    // Relasi: kehadiran
     public function attendances()
     {
         return $this->hasMany(Attendance::class);

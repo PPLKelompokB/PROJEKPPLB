@@ -10,22 +10,21 @@ class ParticipantController extends Controller
 {
     public function index($eventId)
     {
-        $event = Event::with('registrations.user')->findOrFail($eventId);
+        $event = Event::with([
+            'registrations.user',
+            'attendances'
+        ])->findOrFail($eventId);
 
-        $attendances = Attendance::where('event_id', $eventId)
-            ->get()
-            ->keyBy('user_id'); 
+        $data = $event->registrations->map(function ($registration) use ($event) {
 
-        $data = $event->registrations->map(function ($registration) use ($attendances) {
-
-            $attendance = $attendances->get($registration->user_id);
+            $attendance = $event->attendances
+                ->where('user_id', $registration->user_id)
+                ->first();
 
             return [
-                'name' => $registration->user->name,
-                'email' => $registration->user->email,
-                'status_kehadiran' => $attendance 
-                    ? $attendance->status 
-                    : 'belum dikonfirmasi'
+                'name' => $registration->user->name ?? 'Unknown',
+                'email' => $registration->user->email ?? '-',
+                'status_kehadiran' => $attendance ? $attendance->status : 'belum dikonfirmasi'
             ];
         });
 

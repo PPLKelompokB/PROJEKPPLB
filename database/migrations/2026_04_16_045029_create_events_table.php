@@ -9,17 +9,16 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up()
+    public function up(): void
     {
         Schema::create('events', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('organizer_id')->constrained('users')->onDelete('cascade');
-            $table->string('title');
+            // Menambahkan index pada kolom title untuk mempercepat proses pencarian
+            $table->string('title')->index(); 
             $table->text('description');
             $table->string('location');
-            $table->date('date');
-            $table->integer('duration'); // jam
-            $table->integer('quota');
+            $table->dateTime('event_date');
+            $table->enum('status', ['published', 'draft', 'archived'])->default('published');
             $table->timestamps();
         });
     }

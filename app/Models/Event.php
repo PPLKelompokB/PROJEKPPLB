@@ -10,6 +10,11 @@ class Event extends Model
         'organizer_id', 'title', 'description', 'location', 'date', 'duration', 'quota'
     ];
 
+    public function organizer()
+    {
+        return $this->belongsTo(User::class, 'organizer_id');
+    }
+    
     public function participants()
     {
         return $this->hasMany(EventRegistration::class)->with('user');

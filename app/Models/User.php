@@ -10,13 +10,11 @@ class User extends Model
         'name', 'email', 'password', 'role', 'photo', 'phone'
     ];
 
-    // Relasi: user daftar event
     public function registrations()
     {
         return $this->hasMany(EventRegistration::class);
     }
 
-    // Relasi: kehadiran
     public function attendances()
     {
         return $this->hasMany(Attendance::class);

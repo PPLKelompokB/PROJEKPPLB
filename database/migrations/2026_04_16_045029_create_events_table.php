@@ -18,7 +18,7 @@ return new class extends Migration
             $table->text('description');
             $table->string('location');
             $table->date('date');
-            $table->integer('duration'); // jam
+            $table->integer('duration');
             $table->integer('quota');
             $table->timestamps();
         });

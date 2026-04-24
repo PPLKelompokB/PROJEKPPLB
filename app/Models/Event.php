@@ -9,13 +9,6 @@ use Illuminate\Database\Eloquent\Builder;
 class Event extends Model
 {
     use HasFactory;
-    protected $fillable = [
-        'title', 
-        'description', 
-        'location', 
-        'event_date', 
-        'status'
-    ];
 
     public function scopeSearch(Builder $query, ?string $keyword): Builder
     {

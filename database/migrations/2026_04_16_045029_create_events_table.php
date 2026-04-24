@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('title')->index(); 
             $table->text('description');
             $table->string('location');
-            $table->date('date');
+            $table->dateTime('event_date');            
             $table->integer('duration');
             $table->integer('quota');
             $table->enum('status', ['published', 'draft', 'archived'])->default('published');

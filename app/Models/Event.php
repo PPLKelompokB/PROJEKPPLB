@@ -7,16 +7,26 @@ use Illuminate\Database\Eloquent\Model;
 class Event extends Model
 {
     protected $fillable = [
-        'name',
-        'description',
-        'location',
-        'date',
-        'quota',
-        'organizer_id'
+        'organizer_id', 'title', 'description', 'location', 'date', 'duration', 'quota'
     ];
 
     public function organizer()
     {
         return $this->belongsTo(User::class, 'organizer_id');
+    }
+    
+    public function participants()
+    {
+        return $this->hasMany(EventRegistration::class)->with('user');
+    }
+    
+    public function registrations()
+    {
+        return $this->hasMany(EventRegistration::class);
+    }
+
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class);
     }
 }

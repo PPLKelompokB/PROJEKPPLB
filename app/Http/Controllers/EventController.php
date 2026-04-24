@@ -1,7 +1,9 @@
+<?php
+
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Event;
+use Illuminate\Http\Request;
 
 class EventController extends Controller
 {
@@ -10,7 +12,7 @@ class EventController extends Controller
         $event = Event::with('organizer')->find($id);
 
         if (!$event) {
-            return redirect()->back()->with('error', 'Event tidak ditemukan');
+            return redirect('/')->with('error', 'Event tidak ditemukan');
         }
 
         return view('events.detail', compact('event'));

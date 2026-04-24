@@ -13,11 +13,13 @@ return new class extends Migration
     {
         Schema::create('events', function (Blueprint $table) {
             $table->id();
-            // Menambahkan index pada kolom title untuk mempercepat proses pencarian
+            $table->foreignId('organizer_id')->constrained('users')->onDelete('cascade');
             $table->string('title')->index(); 
             $table->text('description');
             $table->string('location');
-            $table->dateTime('event_date');
+            $table->date('date');
+            $table->integer('duration');
+            $table->integer('quota');
             $table->enum('status', ['published', 'draft', 'archived'])->default('published');
             $table->timestamps();
         });

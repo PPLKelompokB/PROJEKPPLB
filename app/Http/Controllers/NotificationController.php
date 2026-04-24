@@ -7,20 +7,26 @@ use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
-    public function index($userId)
+    public function index(Request $request, $userId)
     {
-        $notifications = Notification::where('user_id', $userId)
-            ->latest()
-            ->get();
+        $query = Notification::where('user_id', auth()->id())->latest();
 
-        return response()->json($notifications);
+        if ($request->has('is_read')) {
+            $query->where('is_read', $request->is_read);
+        }
+
+        return response()->json(
+            $query->paginate(10)
+        );
     }
 
     public function markAsRead($id)
     {
-        $notif = Notification::findOrFail($id);
-        $notif->is_read = true;
-        $notif->save();
+        $notif = Notification::where('id', $id)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+
+        $notif->update(['is_read' => true]);
 
         return response()->json([
             'message' => 'Notifikasi ditandai sebagai dibaca'

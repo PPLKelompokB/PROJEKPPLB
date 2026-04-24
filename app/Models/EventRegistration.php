@@ -19,4 +19,10 @@ class EventRegistration extends Model
     {
         return $this->belongsTo(Event::class);
     }
+
+    public function attendance()
+    {
+        return $this->hasOne(Attendance::class, 'user_id', 'user_id')
+            ->whereColumn('event_id', 'event_registrations.event_id');
+    }
 }

@@ -8,6 +8,14 @@ use App\Http\Controllers\NotificationController;
 
 /*
 |--------------------------------------------------------------------------
+| Landing Page
+|--------------------------------------------------------------------------
+*/
+
+
+
+/*
+|--------------------------------------------------------------------------
 | Event API
 |--------------------------------------------------------------------------
 */
@@ -36,6 +44,7 @@ Route::prefix('documentations')->group(function () {
 */
 
 Route::middleware('auth')->group(function () {
+    Route::get('/events/{id}', [EventController::class, 'show']);
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 });

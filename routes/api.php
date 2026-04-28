@@ -8,14 +8,6 @@ use App\Http\Controllers\NotificationController;
 
 /*
 |--------------------------------------------------------------------------
-| Landing Page
-|--------------------------------------------------------------------------
-*/
-
-
-
-/*
-|--------------------------------------------------------------------------
 | Event API
 |--------------------------------------------------------------------------
 */
@@ -23,6 +15,10 @@ use App\Http\Controllers\NotificationController;
 Route::prefix('events')->group(function () {
     Route::get('/search', [EventController::class, 'index']);
     Route::get('/{id}/participants', [ParticipantController::class, 'index']);
+
+    Route::middleware('auth')->group(function () {
+        Route::get('/{id}', [EventController::class, 'show']);
+    });
 });
 
 /*
@@ -31,7 +27,7 @@ Route::prefix('events')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::prefix('documentations')->group(function () {
+Route::prefix('documentations')->middleware('auth')->group(function () {
     Route::post('/', [DocumentationController::class, 'store']);
     Route::get('/', [DocumentationController::class, 'index']);
     Route::put('/{id}/verify', [DocumentationController::class, 'verify']);
@@ -44,7 +40,6 @@ Route::prefix('documentations')->group(function () {
 */
 
 Route::middleware('auth')->group(function () {
-    Route::get('/events/{id}', [EventController::class, 'show']);
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 });

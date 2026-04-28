@@ -1,5 +1,8 @@
-<x-navbar />
+@extends('layouts.app')
 
+@section('title', 'Volunteer Dashboard')
+
+@section('content')
 <div class="p-8">
 
     <h1 class="text-2xl font-semibold mb-2">
@@ -63,5 +66,4 @@
     </div>
 
 </div>
-
-<x-footer />
+@endsection

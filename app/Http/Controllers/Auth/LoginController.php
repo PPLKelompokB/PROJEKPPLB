@@ -20,23 +20,35 @@ class LoginController extends Controller
             'password' => ['required'],
         ]);
 
-        if (Auth::attempt($credentials, $request->remember)) {
-            $request->session()->regenerate();
-
-            // 🔥 OPTIONAL: redirect berdasarkan role
-            $user = Auth::user();
-
-            if ($user->role === 'admin') {
-                return redirect('/admin');
-            } elseif ($user->role === 'organizer') {
-                return redirect('/organizer');
-            }
-
-            return redirect('/'); // volunteer
+        if (!Auth::attempt($credentials, $request->remember)) {
+            return back()->withErrors([
+                'email' => 'Email atau password salah',
+            ])->withInput();
         }
 
-        return back()->withErrors([
-            'email' => 'Email atau password salah',
-        ]);
+        $request->session()->regenerate();
+
+        $user = Auth::user();
+
+        return redirect()->route($this->redirectTo($user->role));
+    }
+
+    public function destroy(Request $request)
+    {
+        Auth::logout();
+
+        $request->session()->invalidate(); 
+        $request->session()->regenerateToken(); 
+
+        return redirect('/'); 
+    }
+    private function redirectTo($role)
+    {
+        return match ($role) {
+            'volunteer' => 'volunteer.dashboard',
+            'organizer' => 'organizer.dashboard',
+            'admin' => 'admin.dashboard',
+            default => 'login'
+        };
     }
 }

@@ -14,6 +14,7 @@ class EventSeeder extends Seeder
         $organizer = User::where('role', 'organizer')->first();
 
         if (!$organizer) {
+            $this->command->warn('Organizer not found. Run OrganizerSeeder first.');
             return;
         }
 
@@ -23,7 +24,7 @@ class EventSeeder extends Seeder
                 'title' => 'Santa Monica Beach Clean-Up',
                 'description' => 'Community cleanup event at Santa Monica Beach.',
                 'location' => 'Santa Monica, CA',
-                'event_date' => Carbon::create(2025, 3, 15, 9, 0, 0),
+                'event_date' => now()->addDays(3),
                 'duration' => 3,
                 'quota' => 100,
                 'status' => 'published',

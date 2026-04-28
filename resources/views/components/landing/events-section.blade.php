@@ -5,7 +5,7 @@
 
     <div class="grid grid-cols-3 gap-6">
         @forelse($events as $event)
-            <x-event-card :event="$event" />
+            <x-event.card :event="$event" />
         @empty
             <p class="text-center col-span-3">Belum ada event</p>
         @endforelse

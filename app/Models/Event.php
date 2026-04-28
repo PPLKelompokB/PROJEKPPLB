@@ -38,4 +38,13 @@ class Event extends Model
             });
         });
     }
+
+    public function getVolunteerStatusAttribute()
+    {
+        if ($this->event_date < now()) {
+            return 'completed';
+        }
+
+        return 'upcoming';
+    }
 }

@@ -10,11 +10,13 @@ class OrganizerSeeder extends Seeder
 {
     public function run(): void
     {
-        User::create([
-            'name' => 'Organizer 1',
-            'email' => 'organizer@oceancare.com',
-            'password' => Hash::make('123456'),
-            'role' => 'organizer'
-        ]);
+        User::firstOrCreate(
+            ['email' => 'organizer@oceancare.com'],
+            [
+                'name' => 'Organizer 1',
+                'password' => Hash::make('123456'),
+                'role' => 'organizer'
+            ]
+        );
     }
 }

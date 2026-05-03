@@ -9,7 +9,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AttendanceController;
 
 Route::get('/', [LandingController::class, 'index']);
-
+Route::get('/events', [EventController::class, 'index']) ->name('events.index');
 Route::middleware('guest')->group(function () {
 
     Route::get('/login', [LoginController::class, 'create'])
@@ -26,7 +26,9 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-
+    Route::post('/events/{id}/register', [EventController::class, 'register'])
+    ->name('events.register');
+    
     Route::post('/logout', [LoginController::class, 'destroy'])
         ->name('logout');
 
@@ -82,3 +84,5 @@ Route::middleware('auth')->group(function () {
 Route::get('/events/{id}', [EventController::class, 'show'])
     ->where('id', '[0-9]+')
     ->name('events.show');
+
+    

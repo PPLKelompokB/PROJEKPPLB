@@ -58,7 +58,10 @@
                 <a href="{{ url('/dashboard') }}" class="nav-link">Dashboard</a>
 
                 {{-- ⚠️ BELUM ADA ROUTE → sementara pakai placeholder --}}
-                <a href="#" class="nav-link">Events</a>
+                <a href="{{ route('events.index') }}" 
+                class="nav-link {{ request()->routeIs('events.*') ? 'font-semibold' : '' }}">
+                Events
+                </a>
                 <a href="#" class="nav-link">Points</a>
                 <a href="#" class="nav-link">Certificates</a>
                 <a href="#" class="nav-link">Leaderboard</a>

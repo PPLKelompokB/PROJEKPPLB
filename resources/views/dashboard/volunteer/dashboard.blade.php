@@ -15,9 +15,17 @@
     {{-- STATS --}}
     <div class="grid grid-cols-4 gap-4 mb-6">
         <x-dashboard.card title="Events Joined" :value="$totalEvents" />
-        <x-dashboard.card title="Volunteer Points" value="2450" />
+        <x-dashboard.card title="Volunteer Points" :value="$user->points" />
         <x-dashboard.card title="Hours Volunteered" :value="$totalHours" />
         <x-dashboard.card title="Upcoming Events" :value="$upcomingEvents->count()" />
+    </div>
+
+    {{-- 🔥 TAMBAHAN: BOX TOTAL POINT (OPSIONAL, BIAR LEBIH JELAS) --}}
+    <div class="bg-white p-4 rounded-xl shadow mb-6">
+        <h2 class="text-lg font-semibold">Total Poin Kamu</h2>
+        <p class="text-3xl font-bold text-green-600">
+            {{ $user->points }}
+        </p>
     </div>
 
     <div class="grid grid-cols-3 gap-6">
@@ -64,6 +72,5 @@
             <p class="text-gray-500 text-sm">Belum ada riwayat event</p>
         @endforelse
     </div>
-
 </div>
 @endsection

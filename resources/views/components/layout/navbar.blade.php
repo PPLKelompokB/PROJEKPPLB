@@ -38,7 +38,7 @@
 
     <h1 class="text-xl font-bold">🌊 OceanCare</h1>
 
-    <div class="flex items-center gap-6">
+    <div class="flex items-center gap-6 relative">
 
         {{-- ================= GUEST ================= --}}
         @guest
@@ -55,13 +55,19 @@
         @auth
             {{-- ========= VOLUNTEER ========= --}}
             @if(auth()->user()->role === 'volunteer')
-                <a href="{{ url('/dashboard') }}" class="nav-link">Dashboard</a>
 
-                {{-- ⚠️ BELUM ADA ROUTE → sementara pakai placeholder --}}
+                <a href="{{ url('/dashboard') }}" class="nav-link">
+                    Dashboard
+                </a>
+
+                
+
+                {{-- ⚠️ BELUM ADA ROUTE --}}
                 <a href="#" class="nav-link">Events</a>
-                <a href="#" class="nav-link">Points</a>
+                <a href="{{ route('points.index') }}" class="nav-link">Points</a>
                 <a href="#" class="nav-link">Certificates</a>
                 <a href="#" class="nav-link">Leaderboard</a>
+
             @endif
 
 
@@ -73,26 +79,25 @@
                 </a>
 
                 <a href="{{ route('events.manage') }}"
-                    class="nav-link {{ request()->routeIs('events.*') ? 'font-semibold' : '' }}">
+                   class="nav-link {{ request()->routeIs('events.*') ? 'font-semibold' : '' }}">
                     Manage Event
                 </a>
 
-                {{-- ⚠️ BELUM ADA ROUTE --}}
                 <a href="#" class="nav-link">Documentation Event</a>
 
                 {{-- 🔔 NOTIFICATION --}}
                 <div class="relative" id="notifWrapper">
 
-                    <button onclick="toggleNotif()" class="relative text-xl">
+                    <button onclick="toggleNotif()" class="relative text-xl z-10">
                         🔔
                         <span id="notifBadge"
-                            class="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1.5 rounded-full hidden">
+                              class="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1.5 rounded-full hidden">
                             0
                         </span>
                     </button>
 
                     <div id="notifDropdown"
-                        class="absolute right-0 mt-3 w-80 bg-white shadow-xl rounded-xl border z-50 hidden">
+                         class="absolute right-0 mt-3 w-80 bg-white shadow-xl rounded-xl border z-50 hidden">
 
                         <div class="p-4 border-b font-semibold">
                             Notifications
@@ -110,10 +115,13 @@
             {{-- ========= ADMIN ========= --}}
             @if(auth()->user()->role === 'admin')
 
-                <a href="{{ url('/dashboard') }}" class="nav-link">Dashboard</a>
+                <a href="{{ url('/dashboard') }}" class="nav-link">
+                    Dashboard
+                </a>
 
-                {{-- ⚠️ BELUM ADA ROUTE --}}
-                <a href="#" class="nav-link">Manage Documentation</a>
+                <a href="#" class="nav-link">
+                    Manage Documentation
+                </a>
 
             @endif
 
@@ -122,11 +130,13 @@
             <div class="flex items-center gap-3 ml-6">
 
                 <img 
-                    src="{{ auth()->user()->photo ? asset(auth()->user()->photo) : 'https://via.placeholder.com/40' }}"
+                    src="{{ optional(auth()->user())->photo ? asset(auth()->user()->photo) : 'https://via.placeholder.com/40' }}"
                     class="w-8 h-8 rounded-full"
                 >
 
-                <span class="text-sm">{{ auth()->user()->name }}</span>
+                <span class="text-sm">
+                    {{ auth()->user()->name }}
+                </span>
 
                 <form action="{{ route('logout') }}" method="POST" class="inline">
                     @csrf

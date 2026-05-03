@@ -26,7 +26,6 @@
             enctype="multipart/form-data">
             @csrf
             @method('PUT')
-            @csrf
 
             {{-- IMAGE UPLOAD --}}
             <div class="mb-6">

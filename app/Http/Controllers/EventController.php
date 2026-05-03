@@ -52,9 +52,13 @@ class EventController extends Controller
 
     public function detail($id)
     {
-        $event = Event::where('organizer_id', auth()->id())
-            ->with('organizer')
-            ->findOrFail($id);
+        $event = Event::where('id', $id)
+            ->where('organizer_id', auth()->id())
+            ->first();
+
+        if (!$event) {
+            abort(403, 'Event bukan milik Anda');
+        }
 
         return view('events.detail-organizer', compact('event'));
     }

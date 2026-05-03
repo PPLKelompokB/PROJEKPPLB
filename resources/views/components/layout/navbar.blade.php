@@ -36,56 +36,61 @@
         }
     </style>
 
-    {{-- LOGO --}}
     <h1 class="text-xl font-bold">🌊 OceanCare</h1>
 
     <div class="flex items-center gap-6">
 
-        {{-- GUEST --}}
+        {{-- ================= GUEST ================= --}}
         @guest
-            <a href="/login" class="px-4 py-2 bg-black text-white rounded">
+            <a href="{{ route('login') }}" class="px-4 py-2 bg-black text-white rounded">
                 Login
             </a>
-            <a href="/register" class="px-4 py-2 border rounded hover:bg-gray-100">
+            <a href="{{ route('register') }}" class="px-4 py-2 border rounded hover:bg-gray-100">
                 Register
             </a>
         @endguest
 
 
-        {{-- AUTH --}}
+        {{-- ================= AUTH ================= --}}
         @auth
-
-            {{-- ================= VOLUNTEER ================= --}}
+            {{-- ========= VOLUNTEER ========= --}}
             @if(auth()->user()->role === 'volunteer')
-                <a href="/dashboard" class="nav-link">Dashboard</a>
-                <a href="/events" class="nav-link">Events</a>
-                <a href="/points" class="nav-link">Points</a>
-                <a href="/certificates" class="nav-link">Certificates</a>
-                <a href="/leaderboard" class="nav-link">Leaderboard</a>
+                <a href="{{ url('/dashboard') }}" class="nav-link">Dashboard</a>
+
+                {{-- ⚠️ BELUM ADA ROUTE → sementara pakai placeholder --}}
+                <a href="#" class="nav-link">Events</a>
+                <a href="#" class="nav-link">Points</a>
+                <a href="#" class="nav-link">Certificates</a>
+                <a href="#" class="nav-link">Leaderboard</a>
             @endif
 
 
-            {{-- ================= ORGANIZER ================= --}}
+            {{-- ========= ORGANIZER ========= --}}
             @if(auth()->user()->role === 'organizer')
 
-                <a href="/dashboard" class="nav-link">Dashboard</a>
-                <a href="/events/manage" class="nav-link">Manage Event</a>
-                <a href="/documentations" class="nav-link">Documentation Event</a>
+                <a href="{{ route('organizer.dashboard') }}" class="nav-link">
+                    Dashboard
+                </a>
+
+                <a href="{{ route('events.manage') }}"
+                    class="nav-link {{ request()->routeIs('events.*') ? 'font-semibold' : '' }}">
+                    Manage Event
+                </a>
+
+                {{-- ⚠️ BELUM ADA ROUTE --}}
+                <a href="#" class="nav-link">Documentation Event</a>
 
                 {{-- 🔔 NOTIFICATION --}}
                 <div class="relative" id="notifWrapper">
 
                     <button onclick="toggleNotif()" class="relative text-xl">
                         🔔
-
-                        {{-- BADGE --}}
                         <span id="notifBadge"
                             class="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1.5 rounded-full hidden">
                             0
                         </span>
                     </button>
 
-                    {{-- DROPDOWN --}}
                     <div id="notifDropdown"
                         class="absolute right-0 mt-3 w-80 bg-white shadow-xl rounded-xl border z-50 hidden">
 
@@ -99,18 +104,21 @@
 
                     </div>
                 </div>
-
             @endif
 
 
-            {{-- ================= ADMIN ================= --}}
+            {{-- ========= ADMIN ========= --}}
             @if(auth()->user()->role === 'admin')
-                <a href="/dashboard" class="nav-link">Dashboard</a>
-                <a href="/admin/documentations" class="nav-link">Manage Documentation</a>
+
+                <a href="{{ url('/dashboard') }}" class="nav-link">Dashboard</a>
+
+                {{-- ⚠️ BELUM ADA ROUTE --}}
+                <a href="#" class="nav-link">Manage Documentation</a>
+
             @endif
 
 
-            {{-- ================= PROFILE ================= --}}
+            {{-- ========= PROFILE ========= --}}
             <div class="flex items-center gap-3 ml-6">
 
                 <img 

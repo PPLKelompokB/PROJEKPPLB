@@ -27,7 +27,7 @@ class AttendanceSeeder extends Seeder
                     'user_id' => $reg->user_id,
                 ],
                 [
-                    'status' => rand(0,1) ? 'hadir' : 'tidak_hadir'
+                    'status' => rand(0,1) ? 'present' : 'absent'
                 ]
             );
         }

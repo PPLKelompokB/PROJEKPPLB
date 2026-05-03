@@ -15,6 +15,11 @@ class ParticipantController extends Controller
             'registrations.attendance'
         ])->findOrFail($eventId);
 
+        $participants = $event->registrations()
+        ->with(['user', 'attendance'])
+        ->latest()
+        ->paginate(5);
+        
         $data = $event->registrations->map(function ($registration) {
             return [
                 'name' => $registration->user->name ?? 'Unknown',

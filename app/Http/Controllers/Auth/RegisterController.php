@@ -1,38 +1,31 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 
 class RegisterController extends Controller
 {
-    public function create()
-    {
-        return view('auth.register');
-    }
-
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'role' => ['required', 'in:volunteer,organizer'],
+        $data = $request->validate([
+            'name' => 'required',
+            'email' => 'required|email|unique:users',
+            'password' => 'required|confirmed|min:6',
+            'role' => 'required|in:admin,organizer,volunteer'
         ]);
 
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']), 
-            'role' => $validated['role'], 
-        ]);
+        $data['password'] = bcrypt($data['password']);
+
+        $user = User::create($data);
 
         Auth::login($user);
 
-        return redirect('/')->with('success', 'Akun OceanCare Anda berhasil dibuat. Selamat datang!');
+        return redirect()->route(match ($user->role) {
+            'volunteer' => 'volunteer.dashboard',
+            'organizer' => 'organizer.dashboard',
+            'admin' => 'admin.dashboard',
+        });
     }
 }

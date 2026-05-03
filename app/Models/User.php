@@ -2,9 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
-class User extends Model
+use Illuminate\Foundation\Auth\User as Authenticatable;
+class User extends Authenticatable
 {
     protected $fillable = [
         'name', 'email', 'password', 'role', 'photo', 'phone'
@@ -18,5 +17,20 @@ class User extends Model
     public function attendances()
     {
         return $this->hasMany(Attendance::class);
+    }
+
+    public function isVolunteer()
+    {
+        return $this->role === 'volunteer';
+    }
+
+    public function isOrganizer()
+    {
+        return $this->role === 'organizer';
+    }
+
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
     }
 }

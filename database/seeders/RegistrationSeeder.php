@@ -14,11 +14,15 @@ class RegistrationSeeder extends Seeder
         $event = Event::first();
         $volunteers = User::where('role', 'volunteer')->get();
 
+        if (!$event) {
+            $this->command->warn('No event found.');
+            return;
+        }
+
         foreach ($volunteers as $volunteer) {
-            EventRegistration::create([
+            EventRegistration::firstOrCreate([
                 'event_id' => $event->id,
                 'user_id' => $volunteer->id,
-                'status' => 'registered'
             ]);
         }
     }

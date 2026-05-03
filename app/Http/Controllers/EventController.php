@@ -84,10 +84,15 @@ class EventController extends Controller
             ->get()
             ->keyBy('user_id');
 
+        $allEvents = \App\Models\Event::where('organizer_id', auth()->id())
+            ->latest()
+            ->get(['id', 'title', 'event_date']);
+
         return view('events.participants', [
             'event' => $event,
             'participants' => $participants,
-            'attendanceMap' => $attendanceMap
+            'attendanceMap' => $attendanceMap,
+            'allEvents' => $allEvents
         ]);
     }
 

@@ -6,16 +6,40 @@ use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\DocumentationController;
 use App\Http\Controllers\NotificationController;
 
-Route::get('/events/search', [EventController::class, 'index']);
+/*
+|--------------------------------------------------------------------------
+| Event API
+|--------------------------------------------------------------------------
+*/
 
-Route::get('/event/{id}/participants', [ParticipantController::class, 'index']);
+Route::prefix('events')->group(function () {
+    Route::get('/search', [EventController::class, 'index']);
+    Route::get('/{id}/participants', [ParticipantController::class, 'index']);
 
-Route::post('/documentations', [DocumentationController::class, 'store']);
+    Route::middleware('auth')->group(function () {
+        Route::get('/{id}', [EventController::class, 'show']);
+    });
+});
 
-Route::get('/documentations', [DocumentationController::class, 'index']);
+/*
+|--------------------------------------------------------------------------
+| Documentation API
+|--------------------------------------------------------------------------
+*/
 
-Route::put('/documentations/{id}/verify', [DocumentationController::class, 'verify']);
+Route::prefix('documentations')->middleware('auth')->group(function () {
+    Route::post('/', [DocumentationController::class, 'store']);
+    Route::get('/', [DocumentationController::class, 'index']);
+    Route::put('/{id}/verify', [DocumentationController::class, 'verify']);
+});
 
-Route::get('/notifications/{userId}', [NotificationController::class, 'index']);
+/*
+|--------------------------------------------------------------------------
+| Notification API
+|--------------------------------------------------------------------------
+*/
 
-Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+Route::middleware('auth')->group(function () {
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+});

@@ -10,17 +10,12 @@ class Event extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'organizer_id', 'title', 'description', 'location', 'date', 'duration', 'quota'
+        'organizer_id', 'title', 'description', 'location', 'event_date', 'duration', 'quota', 'status', 'image','meeting_point', 'contact_person','contact_phone'
     ];
 
     public function organizer()
     {
         return $this->belongsTo(User::class, 'organizer_id');
-    }
-    
-    public function participants()
-    {
-        return $this->hasMany(EventRegistration::class)->with('user');
     }
     
     public function registrations()
@@ -36,9 +31,20 @@ class Event extends Model
     public function scopeSearch(Builder $query, ?string $keyword): Builder
     {
         return $query->when($keyword, function ($q) use ($keyword) {
-            $q->where('title', 'LIKE', "%{$keyword}%")
-              ->orWhere('location', 'LIKE', "%{$keyword}%")
-              ->orWhere('description', 'LIKE', "%{$keyword}%");
+            $q->where(function ($sub) use ($keyword) {
+                $sub->where('title', 'LIKE', "%{$keyword}%")
+                    ->orWhere('location', 'LIKE', "%{$keyword}%")
+                    ->orWhere('description', 'LIKE', "%{$keyword}%");
+            });
         });
+    }
+
+    public function getVolunteerStatusAttribute()
+    {
+        if ($this->event_date < now()) {
+            return 'completed';
+        }
+
+        return 'upcoming';
     }
 }

@@ -11,12 +11,14 @@ class VolunteerSeeder extends Seeder
     public function run(): void
     {
         for ($i = 1; $i <= 5; $i++) {
-            User::create([
-                'name' => "Volunteer $i",
-                'email' => "volunteer$i@mail.com",
-                'password' => Hash::make('123456'),
-                'role' => 'volunteer'
-            ]);
+            User::firstOrCreate(
+                ['email' => "volunteer$i@mail.com"],
+                [
+                    'name' => "Volunteer $i",
+                    'password' => Hash::make('123456'),
+                    'role' => 'volunteer'
+                ]
+            );
         }
     }
 }

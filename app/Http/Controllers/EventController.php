@@ -5,9 +5,17 @@ namespace App\Http\Controllers;
 use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Models\EventRegistration;
 
 class EventController extends Controller
-{
+{   
+    public function index()
+    {
+        $events = Event::with('organizer')->withCount('registrations')->latest()->paginate(6);
+
+        return view('events.index', compact('events'));
+    }
+
     public function show($id)
     {
         $event = Event::with(['organizer', 'registrations.user'])
@@ -156,6 +164,43 @@ class EventController extends Controller
             ->route('events.detail', $event->id)
             ->with('success', 'Event berhasil diupdate');
     }
+    public function register($id)
+    {
+        $user = auth()->user();
+
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        $event = Event::findOrFail($id);
+
+        // cek apakah sudah daftar
+        $alreadyRegistered = EventRegistration::where('user_id', $user->id)
+            ->where('event_id', $id)
+            ->where('status', 'registered')
+            ->exists();
+
+        if ($alreadyRegistered) {
+            return back()->with('error', 'Kamu sudah terdaftar di event ini');
+        }
+
+        // cek quota penuh
+        if ($event->registrations()->count() >= $event->quota) {
+            return back()->with('error', 'Kuota event sudah penuh');
+        }
+
+        if ($event->event_date < now()) {
+            return back()->with('error', 'Event sudah selesai');
+        }
+
+        EventRegistration::create([
+            'user_id' => $user->id,
+            'event_id' => $id,
+            'status' => 'registered'
+        ]);
+
+        return redirect()->route('events.show', $id)
+            ->with('success', 'Berhasil mendaftar!');
 
     public function create()
     {

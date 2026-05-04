@@ -1,62 +1,103 @@
-@extends('layouts.auth')
+@extends('layouts.app')
 
-@section('title', 'Login')
-
-@section('navbar')
-{{-- kosong biar ga ada navbar --}}
-@endsection
-
-@section('footer')
-{{-- kosong --}}
-@endsection
+@section('title', 'Login - OceanCare')
 
 @section('content')
-<div class="min-h-screen flex items-center justify-center">
 
-    <div class="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
+<!-- LANDING PAGE BACKGROUND (BLURRED) -->
+<div class="relative">
+    <div class="filter blur-sm pointer-events-none select-none h-screen overflow-hidden">
+        <x-landing.hero />
+        <x-landing.stats :volunteers="$totalVolunteers" :events="$totalEvents" />
+        <x-landing.events-section :events="$events" />
+        <x-landing.mission />
+    </div>
 
-        <div class="text-center mb-6">
-            <h1 class="text-xl font-bold">OceanCare</h1>
+    <!-- LOGIN OVERLAY -->
+    <div class="fixed inset-0 flex items-center justify-center z-50 overflow-y-auto">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+        
+        <div class="relative bg-white rounded-3xl shadow-2xl w-[26rem] flex flex-col p-8 my-8 mx-4">
+            
+            <!-- Logo Section -->
+            <div class="flex flex-col items-center mb-6">
+                <svg class="w-10 h-10 text-gray-800" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <path d="M6 10c1.5 0 2-1 3.5-1s2 1 3.5 1 2-1 3.5-1 2 1 3.5 1" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+                    <path d="M8 14c1.5 0 2-1 3.5-1s2 1 3.5 1" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+                </svg>
+                <h2 class="text-lg font-bold text-gray-800 tracking-tight mt-1">OceanCare</h2>
+            </div>
+
+            <h1 class="text-2xl font-bold text-center text-gray-900 mb-2">Welcome Back</h1>
+            <p class="text-center text-[11px] text-gray-500 mb-6 font-medium max-w-xs mx-auto">
+                Sign in to your OceanCare account
+            </p>
+
+            @if(session('success'))
+                <div class="mb-4 bg-green-50 text-green-700 p-3 rounded-lg text-xs font-medium border border-green-100 text-center">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if ($errors->any())
+                <div class="mb-4 bg-red-50 text-red-600 p-3 rounded-lg text-xs font-medium border border-red-100">
+                    @foreach ($errors->all() as $error)
+                        <p>• {{ $error }}</p>
+                    @endforeach
+                </div>
+            @endif
+
+            <form method="POST" action="{{ route('login.post') }}" class="space-y-4">
+                @csrf
+
+                <!-- Email Input -->
+                <div>
+                    <label class="block text-[11px] font-semibold text-gray-700 mb-1">Email Address</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                        </div>
+                        <input type="email" name="email" value="{{ old('email') }}" placeholder="Enter your email" class="w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-gray-300 focus:border-gray-300 transition-colors" required>
+                    </div>
+                </div>
+
+                <!-- Password Input -->
+                <div>
+                    <label class="block text-[11px] font-semibold text-gray-700 mb-1">Password</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                        </div>
+                        <input type="password" name="password" placeholder="Enter your password" class="w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-gray-300 focus:border-gray-300 transition-colors" required>
+                    </div>
+                </div>
+
+                <!-- Remember Me & Forgot Password -->
+                <div class="flex items-center justify-between mt-2 mb-4">
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" name="remember" class="w-3.5 h-3.5 border-gray-300 rounded text-black focus:ring-black">
+                        <span class="ml-2 text-[11px] text-gray-600 font-medium">Remember me</span>
+                    </label>
+                    <a href="#" class="text-[11px] font-bold text-gray-800 hover:underline">
+                        Forgot password?
+                    </a>
+                </div>
+
+                <div class="pt-2">
+                    <button class="w-full bg-black hover:bg-gray-800 text-white py-3 rounded-lg text-sm font-medium transition duration-200">
+                        Login
+                    </button>
+                </div>
+            </form>
+
+            <p class="text-center text-xs text-gray-500 mt-6 font-medium">
+                Don't have an account?
+                <a href="{{ route('register') }}" class="text-black font-bold hover:underline ml-1">
+                    Sign up
+                </a>
+            </p>
         </div>
-
-        <h2 class="text-2xl font-semibold text-center mb-2">Login</h2>
-        <p class="text-sm text-gray-500 text-center mb-6">
-            Please login to your account
-        </p>
-
-        @if(session('success'))
-            <div class="mb-4 bg-green-100 text-green-700 p-3 rounded text-sm">
-                {{ session('success') }}
-            </div>
-        @endif
-
-        @if ($errors->any())
-            <div class="mb-4 bg-red-100 text-red-700 p-3 rounded text-sm">
-                @foreach ($errors->all() as $error)
-                    <p>- {{ $error }}</p>
-                @endforeach
-            </div>
-        @endif
-
-        <form method="POST" action="{{ route('login.post') }}" class="space-y-4">
-            @csrf
-
-            <input type="email" name="email" value="{{ old('email') }}"placeholder="Email"
-                class="w-full border p-3 rounded" required>
-
-            <input type="password" name="password" placeholder="Password"
-                class="w-full border p-3 rounded" required>
-
-            <button class="w-full bg-black text-white py-3 rounded">
-                Login
-            </button>
-        </form>
-
-        <p class="text-center text-sm mt-4">
-            Don’t have an account?
-            <a href="/register" class="font-medium hover:underline">Sign up</a>
-        </p>
-
     </div>
 </div>
 @endsection

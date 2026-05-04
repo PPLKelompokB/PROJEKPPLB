@@ -224,6 +224,5 @@
         </div>
 
     </div>
-
 </div>
 @endsection

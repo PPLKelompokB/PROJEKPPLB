@@ -3,10 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <title>@yield('title', 'OceanCare')</title>
-
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
 </head>
-<body class="bg-gray-100">
+<body class="bg-[#fcfcfc] text-gray-800 antialiased">
 
     {{-- NAVBAR (opsional) --}}
     @hasSection('navbar')
@@ -77,8 +84,13 @@
             const badge = document.getElementById('notifBadge');
 
             if (!data.data || data.data.length === 0) {
-                list.innerHTML = `<p class="p-4 text-sm text-gray-500">No notifications</p>`;
-                badge.classList.add('hidden');
+                if (list) list.innerHTML = `<p class="p-4 text-sm text-gray-500 text-center py-8">
+                    <svg class="w-10 h-10 mx-auto text-gray-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                    No new notifications
+                </p>`;
+                if (badge) badge.classList.add('hidden');
                 return;
             }
 
@@ -88,23 +100,40 @@
             data.data.forEach(n => {
                 if (!n.is_read) unread++;
 
+                // Menyesuaikan style jika notifikasi berupa ACC/REJECT documentation event
+                let icon = '';
+                let bgClass = !n.is_read ? 'bg-blue-50/50 border-l-4 border-l-blue-500' : 'hover:bg-gray-50 border-l-4 border-l-transparent';
+                
+                if (n.type === 'error' || (n.title && n.title.toLowerCase().includes('reject'))) {
+                    icon = `<div class="bg-red-100 text-red-600 p-2.5 rounded-full shrink-0 shadow-sm"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></div>`;
+                } else if (n.type === 'success' || (n.title && n.title.toLowerCase().includes('approv') || n.title && n.title.toLowerCase().includes('acc'))) {
+                    icon = `<div class="bg-green-100 text-green-600 p-2.5 rounded-full shrink-0 shadow-sm"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></div>`;
+                } else {
+                    icon = `<div class="bg-blue-100 text-blue-600 p-2.5 rounded-full shrink-0 shadow-sm"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>`;
+                }
+
                 html += `
-                    <div class="p-4 border-b hover:bg-gray-50 cursor-pointer"
+                    <div class="p-4 border-b border-gray-100 ${bgClass} cursor-pointer transition-all flex gap-3 items-start relative group"
                         onclick="markAsRead(${n.id})">
-                        <p class="font-medium">${n.title}</p>
-                        <p class="text-sm text-gray-600">${n.message}</p>
-                        ${!n.is_read ? '<span class="text-xs text-blue-500">NEW</span>' : ''}
+                        ${icon}
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold text-gray-900 leading-tight">${n.title}</p>
+                            <p class="text-[13px] text-gray-500 mt-1 leading-snug">${n.message}</p>
+                            ${!n.is_read ? '<span class="absolute top-4 right-4 w-2 h-2 rounded-full bg-blue-500 shadow-sm"></span>' : ''}
+                        </div>
                     </div>
                 `;
             });
 
-            list.innerHTML = html;
+            if (list) list.innerHTML = html;
 
-            if (unread > 0) {
-                badge.innerText = unread;
-                badge.classList.remove('hidden');
-            } else {
-                badge.classList.add('hidden');
+            if (badge) {
+                if (unread > 0) {
+                    badge.innerText = unread;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
             }
 
         } catch (err) {
@@ -122,6 +151,14 @@
 
         fetchNotifications();
     }
+
+    // Panggil saat page load agar badge merah muncul jika ada notif baru
+    document.addEventListener('DOMContentLoaded', () => {
+        const badge = document.getElementById('notifBadge');
+        if (badge) {
+            fetchNotifications();
+        }
+    });
     </script>
 
     @stack('scripts')

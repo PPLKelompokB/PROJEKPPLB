@@ -4,18 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Documentation extends Model
+class Point extends Model
 {
-    protected $attributes = [
-        'status' => 'pending'
-    ];
-
     protected $fillable = [
+        'user_id',
         'event_id',
-        'organizer_id',
-        'file_path',
-        'note',
-        'status' 
+        'points'
     ];
 
     public function event()

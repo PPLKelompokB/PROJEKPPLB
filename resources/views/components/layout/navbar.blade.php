@@ -38,10 +38,10 @@
 
     <!-- LEFT: Logo -->
     <div class="flex items-center gap-2 w-1/4">
-        <svg class="w-8 h-8 text-gray-800" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="2"/>
-            <path d="M6 10c1.5 0 2-1 3.5-1s2 1 3.5 1 2-1 3.5-1 2 1 3.5 1" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
-            <path d="M8 14c1.5 0 2-1 3.5-1s2 1 3.5 1" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <svg class="w-8 h-8 text-gray-800" viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path d="M 50 25 C 40 5, 10 5, 10 35 C 10 55, 35 75, 50 90 C 65 75, 90 55, 90 35 C 90 5, 60 5, 50 25 Z" fill="none" stroke="currentColor" stroke-width="10" stroke-linejoin="round"/>
+            <path d="M 13 48 C 25 35, 40 35, 50 48 C 60 61, 75 61, 87 48" fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
+            <path d="M 23 68 C 32 58, 42 58, 50 68 C 58 78, 68 78, 77 68" fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
         </svg>
         <h1 class="text-xl font-bold text-gray-800 tracking-tight">OceanCare</h1>
     </div>
@@ -63,12 +63,22 @@
                     Dashboard
                 </a>
 
-                <button class="flex items-center gap-1.5 text-sm font-bold border px-4 py-2 rounded-lg shadow-sm transition uppercase text-[10px] tracking-wider {{ $isEvent ? 'text-gray-800 border-gray-300 bg-gray-50' : 'text-gray-500 border-transparent hover:bg-gray-50 hover:text-gray-800' }}">
-                    EVENT
-                    <svg class="w-3 h-3 {{ $isEvent ? 'text-gray-700' : 'text-gray-400' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path>
-                    </svg>
-                </button>
+                <div class="relative group">
+                    <button class="flex items-center gap-1.5 text-sm font-bold border px-4 py-2 rounded-lg shadow-sm transition uppercase text-[10px] tracking-wider {{ $isEvent ? 'text-gray-800 border-gray-300 bg-gray-50' : 'text-gray-500 border-transparent hover:bg-gray-50 hover:text-gray-800' }}">
+                        EVENT
+                        <svg class="w-3 h-3 {{ $isEvent ? 'text-gray-700' : 'text-gray-400' }} transition-transform duration-200 group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    
+                    <div class="absolute left-0 mt-2 w-48 bg-white border border-gray-100 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pt-1">
+                        <div class="py-1">
+                            <a href="{{ route('events.index') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-black transition-colors {{ request()->routeIs('events.index') ? 'bg-gray-50 text-black font-medium' : '' }}">Event List</a>
+                            <a href="#" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-black transition-colors">Registered Events</a>
+                            <a href="#" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-black transition-colors">Event History</a>
+                        </div>
+                    </div>
+                </div>
 
                 <a href="#" class="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-800 transition">
                     <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -115,7 +125,7 @@
                     Manage Event
                 </a>
 
-                <a href="#" class="flex items-center gap-2 text-sm font-medium transition {{ $isDoc ? 'text-gray-800 bg-gray-200 px-4 py-2 rounded-lg' : 'text-gray-500 hover:text-gray-800' }}">
+                <a href="{{ route('organizer.documentation.index') }}" class="flex items-center gap-2 text-sm font-medium transition {{ $isDoc ? 'text-gray-800 bg-gray-200 px-4 py-2 rounded-lg' : 'text-gray-500 hover:text-gray-800' }}">
                     <svg class="w-4 h-4 {{ $isDoc ? 'text-gray-600' : 'text-gray-400' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -138,7 +148,7 @@
                     Dashboard
                 </a>
 
-                <a href="#" class="flex items-center gap-2 text-sm font-medium transition {{ $isDoc ? 'text-gray-800 bg-gray-200 px-4 py-2 rounded-lg' : 'text-gray-500 hover:text-gray-800' }}">
+                <a href="{{ route('admin.documentation.index') }}" class="flex items-center gap-2 text-sm font-medium transition {{ $isDoc ? 'text-gray-800 bg-gray-200 px-4 py-2 rounded-lg' : 'text-gray-500 hover:text-gray-800' }}">
                     <svg class="w-4 h-4 {{ $isDoc ? 'text-gray-600' : 'text-gray-400' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -178,7 +188,14 @@
 
                     <div id="notifDropdown" class="absolute right-0 mt-3 w-80 bg-white shadow-xl rounded-xl border z-50 hidden">
                         <div class="p-4 border-b font-semibold text-sm">Notifications</div>
-                        <div id="notifList" class="max-h-80 overflow-y-auto"><p class="p-4 text-sm text-gray-500">Loading...</p></div>
+                        <div id="notifList" class="max-h-80 overflow-y-auto">
+                            <div class="flex justify-center items-center py-8">
+                                <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            </div>
+                        </div>
                     </div>
                 </div>
             @endif

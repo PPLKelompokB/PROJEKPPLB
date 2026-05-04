@@ -6,8 +6,11 @@ use App\Http\Controllers\LandingController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AttendanceController;
-use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\DocumentationController;
+use App\Http\Controllers\AdminDocumentationController;
+use App\Http\Controllers\OrganizerDocumentationController;
+use App\Http\Controllers\NotificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -42,6 +45,9 @@ Route::middleware('auth')->group(function () {
     
     Route::post('/logout', [LoginController::class, 'destroy'])
         ->name('logout');
+
+    Route::get('/api/notifications', [NotificationController::class, 'index']);
+    Route::put('/api/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 
     Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
     Route::post('/events', [EventController::class, 'store'])->name('events.store');
@@ -124,6 +130,20 @@ Route::middleware('auth')->group(function () {
                 ->name('events.update');
         });
 
+        Route::get('/organizer/documentation', [OrganizerDocumentationController::class, 'index'])
+            ->name('organizer.documentation.index');
+
+        Route::get('/organizer/documentation/{eventId}', [OrganizerDocumentationController::class, 'show'])
+            ->where('eventId', '[0-9]+')
+            ->name('organizer.documentation.show');
+
+        Route::post('/organizer/documentation', [OrganizerDocumentationController::class, 'store'])
+            ->name('organizer.documentation.store');
+
+        Route::delete('/organizer/documentation/{id}', [OrganizerDocumentationController::class, 'destroy'])
+            ->where('id', '[0-9]+')
+            ->name('organizer.documentation.destroy');
+
         Route::post('/attendance/{registrationId}/mark',
             [AttendanceController::class, 'mark']
         )->name('attendance.mark');
@@ -138,6 +158,13 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/admin/dashboard', [DashboardController::class, 'admin'])
             ->name('admin.dashboard');
+
+        Route::get('/admin/documentation', [AdminDocumentationController::class, 'index'])
+            ->name('admin.documentation.index');
+
+        Route::get('/admin/documentation/{eventId}', [AdminDocumentationController::class, 'show'])
+            ->where('eventId', '[0-9]+')
+            ->name('admin.documentation.show');
 
         Route::post('/documentation/{id}/verify', [DocumentationController::class, 'verify'])
             ->where('id', '[0-9]+')

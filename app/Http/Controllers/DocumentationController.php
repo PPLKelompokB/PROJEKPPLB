@@ -76,10 +76,10 @@ class DocumentationController extends Controller
         // ✅ Notifikasi tetap dipakai (sudah bagus)
         Notification::create([
             'user_id' => $event->organizer_id,
-            'title' => 'Hasil Verifikasi Dokumentasi',
+            'title' => $request->status === 'approved' ? 'Documentation Approved' : 'Documentation Rejected',
             'message' => $request->status === 'approved'
-                ? 'Dokumentasi kegiatan Anda telah disetujui.'
-                : 'Dokumentasi ditolak, silakan upload ulang.',
+                ? 'Your event documentation has been approved by admin.'
+                : 'Your event documentation has been rejected. Please re-upload.',
             'type' => $request->status === 'approved' ? 'success' : 'error',
             'is_read' => false
         ]);

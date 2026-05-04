@@ -102,24 +102,24 @@
 
                 // Menyesuaikan style jika notifikasi berupa ACC/REJECT documentation event
                 let icon = '';
-                let bgClass = !n.is_read ? 'bg-blue-50/50' : 'hover:bg-gray-50';
+                let bgClass = !n.is_read ? 'bg-blue-50/50 border-l-4 border-l-blue-500' : 'hover:bg-gray-50 border-l-4 border-l-transparent';
                 
-                if (n.title && n.title.toLowerCase().includes('reject')) {
-                    icon = `<div class="bg-red-100 text-red-600 p-2 rounded-full shrink-0"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></div>`;
-                } else if (n.title && n.title.toLowerCase().includes('accept') || n.title && n.title.toLowerCase().includes('acc')) {
-                    icon = `<div class="bg-green-100 text-green-600 p-2 rounded-full shrink-0"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></div>`;
+                if (n.type === 'error' || (n.title && n.title.toLowerCase().includes('reject'))) {
+                    icon = `<div class="bg-red-100 text-red-600 p-2.5 rounded-full shrink-0 shadow-sm"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></div>`;
+                } else if (n.type === 'success' || (n.title && n.title.toLowerCase().includes('approv') || n.title && n.title.toLowerCase().includes('acc'))) {
+                    icon = `<div class="bg-green-100 text-green-600 p-2.5 rounded-full shrink-0 shadow-sm"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></div>`;
                 } else {
-                    icon = `<div class="bg-blue-100 text-blue-600 p-2 rounded-full shrink-0"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>`;
+                    icon = `<div class="bg-blue-100 text-blue-600 p-2.5 rounded-full shrink-0 shadow-sm"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>`;
                 }
 
                 html += `
-                    <div class="p-4 border-b ${bgClass} cursor-pointer transition flex gap-3 items-start"
+                    <div class="p-4 border-b border-gray-100 ${bgClass} cursor-pointer transition-all flex gap-3 items-start relative group"
                         onclick="markAsRead(${n.id})">
                         ${icon}
-                        <div>
-                            <p class="text-sm font-semibold text-gray-800">${n.title}</p>
-                            <p class="text-xs text-gray-600 mt-0.5">${n.message}</p>
-                            ${!n.is_read ? '<span class="text-[10px] font-bold text-blue-600 mt-1 inline-block uppercase tracking-wider">New</span>' : ''}
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold text-gray-900 leading-tight">${n.title}</p>
+                            <p class="text-[13px] text-gray-500 mt-1 leading-snug">${n.message}</p>
+                            ${!n.is_read ? '<span class="absolute top-4 right-4 w-2 h-2 rounded-full bg-blue-500 shadow-sm"></span>' : ''}
                         </div>
                     </div>
                 `;

@@ -9,11 +9,51 @@ use App\Models\EventRegistration;
 
 class EventController extends Controller
 {   
-    public function index()
+    public function index(Request $request)
     {
-        $events = Event::with('organizer')->withCount('registrations')->latest()->paginate(6);
+        $query = Event::with('organizer')->withCount('registrations');
 
-        return view('events.index', compact('events'));
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('location', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('location')) {
+            $query->where('location', 'like', '%' . $request->location . '%');
+        }
+
+        if ($request->filled('date')) {
+            if ($request->date === 'today') {
+                $query->whereDate('event_date', \Carbon\Carbon::today());
+            } elseif ($request->date === 'this_week') {
+                $query->whereBetween('event_date', [
+                    \Carbon\Carbon::now()->startOfWeek(),
+                    \Carbon\Carbon::now()->endOfWeek()
+                ]);
+            } elseif ($request->date === 'this_month') {
+                $query->whereMonth('event_date', \Carbon\Carbon::now()->month)
+                      ->whereYear('event_date', \Carbon\Carbon::now()->year);
+            }
+        }
+
+        if ($request->filled('sort')) {
+            if ($request->sort === 'latest') {
+                $query->latest('event_date');
+            } else {
+                $query->oldest('event_date');
+            }
+        } else {
+            $query->oldest('event_date'); // Default matches 'Earliest' option in UI
+        }
+
+        $events = $query->paginate(6)->withQueryString();
+        $locations = \App\Models\Event::select('location')->whereNotNull('location')->distinct()->pluck('location')->sort();
+
+        return view('events.index', compact('events', 'locations'));
     }
 
     public function show($id)
@@ -201,6 +241,7 @@ class EventController extends Controller
 
         return redirect()->route('events.show', $id)
             ->with('success', 'Berhasil mendaftar!');
+    }
 
     public function create()
     {
@@ -251,29 +292,4 @@ class EventController extends Controller
             ->with('success', 'Event berhasil dibuat!');
     }
 
-    public function register(Request $request, $id)
-    {
-        $event = Event::findOrFail($id);
-        
-        $alreadyRegistered = \App\Models\EventRegistration::where('event_id', $id)
-            ->where('user_id', auth()->id())
-            ->exists();
-            
-        if ($alreadyRegistered) {
-            return back()->with('error', 'You are already registered for this event.');
-        }
-
-        $totalVolunteers = $event->registrations()->count();
-        if ($totalVolunteers >= $event->quota) {
-            return back()->with('error', 'Sorry, the event is full.');
-        }
-
-        \App\Models\EventRegistration::create([
-            'event_id' => $event->id,
-            'user_id' => auth()->id(),
-            'status' => 'registered',
-        ]);
-
-        return back()->with('success', 'Successfully registered for the event!');
-    }
 }

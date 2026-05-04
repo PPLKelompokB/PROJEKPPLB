@@ -23,6 +23,11 @@ class Event extends Model
         return $this->hasMany(EventRegistration::class);
     }
 
+    public function documentations()
+    {
+        return $this->hasMany(Documentation::class);
+    }
+
     public function attendances()
     {
         return $this->hasMany(Attendance::class);

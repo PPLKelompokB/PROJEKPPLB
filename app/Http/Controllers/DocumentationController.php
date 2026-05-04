@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use App\Models\Documentation;
 use App\Models\Event;
 use App\Models\Notification;
+use App\Models\Point;
+use App\Models\User;
+use App\Models\EventRegistration;
 use Illuminate\Support\Facades\Storage;
 
 class DocumentationController extends Controller
@@ -83,6 +86,32 @@ class DocumentationController extends Controller
             'type' => $request->status === 'approved' ? 'success' : 'error',
             'is_read' => false
         ]);
+
+        // 🔥 AUTOMATIC POINT AWARDING
+        if ($request->status === 'approved') {
+            $registrations = EventRegistration::where('event_id', $event->id)->get();
+            $pointsEarned = $event->duration * 10;
+
+            foreach ($registrations as $registration) {
+                // Check if point has already been awarded to avoid duplicate
+                $existingPoint = Point::where('event_id', $event->id)
+                                      ->where('user_id', $registration->user_id)
+                                      ->first();
+                if (!$existingPoint) {
+                    Point::create([
+                        'user_id' => $registration->user_id,
+                        'event_id' => $event->id,
+                        'points' => $pointsEarned
+                    ]);
+
+                    $user = User::find($registration->user_id);
+                    if ($user) {
+                        $user->points += $pointsEarned;
+                        $user->save();
+                    }
+                }
+            }
+        }
 
         return response()->json([
             'message' => 'Verifikasi berhasil + notifikasi terkirim',

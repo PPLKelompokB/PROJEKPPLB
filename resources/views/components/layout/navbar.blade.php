@@ -54,6 +54,7 @@
                 @php
                     $isDashboard = request()->is('dashboard') || request()->routeIs('volunteer.dashboard');
                     $isEvent = request()->is('events*') || request()->is('event*');
+                    $isPoints = request()->routeIs('points.index');
                 @endphp
                 <a href="{{ url('/dashboard') }}" 
                    class="flex items-center gap-2 text-sm font-medium transition {{ $isDashboard ? 'text-gray-800 bg-gray-200 px-4 py-2 rounded-lg' : 'text-gray-500 hover:text-gray-800' }}">
@@ -70,8 +71,8 @@
                     </svg>
                 </button>
 
-                <a href="#" class="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-800 transition">
-                    <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <a href="{{ route('points.index') }}" class="flex items-center gap-2 text-sm font-medium transition {{ $isPoints ? 'text-gray-800 bg-gray-200 px-4 py-2 rounded-lg' : 'text-gray-500 hover:text-gray-800' }}">
+                    <svg class="w-4 h-4 {{ $isPoints ? 'text-gray-600' : 'text-gray-400' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                     </svg>
                     Points

@@ -10,6 +10,18 @@ use App\Models\Attendance;
 
 class DashboardController extends Controller
 {
+    public function index()
+    {
+        $user = Auth::user();
+
+        return match ($user->role) {
+            'admin' => redirect()->route('dashboard.admin'),
+            'organizer' => redirect()->route('dashboard.organizer'),
+            'volunteer' => redirect()->route('dashboard.volunteer'),
+            default => redirect()->route('login'),
+        };
+    }
+
     // ========================
     // VOLUNTEER
     // ========================

@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class LoginController extends Controller
 {
@@ -12,6 +14,10 @@ class LoginController extends Controller
      */
     public function show()
     {
+        if (Auth::check()) {
+            return redirect()->route('dashboard');
+        }
+
         return view('auth.login');
     }
 
@@ -20,8 +26,7 @@ class LoginController extends Controller
      */
     public function store(Request $request)
     {
-        // Validasi input
-        $credentials = $request->validate([
+        $request->validate([
             'email' => 'required|email',
             'password' => 'required',
         ], [
@@ -30,16 +35,34 @@ class LoginController extends Controller
             'password.required' => 'Password wajib diisi',
         ]);
 
-        // Cek kredensial
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
-            return redirect()->intended('/')->with('success', 'Login berhasil!');
+        $user = User::where('email', $request->email)->first();
+
+        if (! $user) {
+            return back()
+                ->withInput($request->only('email'))
+                ->withErrors(['email' => 'Email tidak ditemukan.']);
         }
 
-        // Login gagal
-        return back()
-            ->withInput($request->only('email'))
-            ->withErrors(['email' => 'Email atau password salah.']);
+        if (! Hash::check($request->password, $user->password)) {
+            return back()
+                ->withInput($request->only('email'))
+                ->withErrors(['password' => 'Password salah.']);
+        }
+
+        Auth::login($user);
+        $request->session()->regenerate();
+        $request->session()->put('user', [
+            'id' => $user->id,
+            'name' => $user->name,
+            'role' => $user->role,
+        ]);
+
+        return match ($user->role) {
+            'admin' => redirect()->route('dashboard.admin')->with('success', 'Login berhasil!'),
+            'organizer' => redirect()->route('dashboard.organizer')->with('success', 'Login berhasil!'),
+            'volunteer' => redirect()->route('dashboard.volunteer')->with('success', 'Login berhasil!'),
+            default => redirect()->route('dashboard')->with('success', 'Login berhasil!'),
+        };
     }
 
     /**

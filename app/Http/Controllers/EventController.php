@@ -61,10 +61,23 @@ class EventController extends Controller
     public function detail($id)
     {
         $event = Event::where('organizer_id', auth()->id())
-            ->with('organizer')
+            ->with(['organizer', 'registrations.user'])
             ->findOrFail($id);
 
-        return view('events.detail-organizer', compact('event'));
+        $user = auth()->user();
+        $totalVolunteers = $event->registrations->count();
+        
+        $isRegistered = false;
+        if ($user) {
+            $isRegistered = $event->registrations
+                ->where('user_id', $user->id)
+                ->where('status', 'registered')
+                ->isNotEmpty();
+        }
+        
+        $isFull = $totalVolunteers >= $event->quota;
+
+        return view('events.detail', compact('event', 'totalVolunteers', 'isRegistered', 'isFull'));
     }
 
     public function edit($id)
@@ -92,10 +105,15 @@ class EventController extends Controller
             ->get()
             ->keyBy('user_id');
 
+        $allEvents = \App\Models\Event::where('organizer_id', auth()->id())
+            ->latest()
+            ->get(['id', 'title', 'event_date']);
+
         return view('events.participants', [
             'event' => $event,
             'participants' => $participants,
-            'attendanceMap' => $attendanceMap
+            'attendanceMap' => $attendanceMap,
+            'allEvents' => $allEvents
         ]);
     }
 
@@ -183,5 +201,79 @@ class EventController extends Controller
 
         return redirect()->route('events.show', $id)
             ->with('success', 'Berhasil mendaftar!');
+
+    public function create()
+    {
+        return view('events.create');
+    }
+
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'location' => 'required|string|max:255',
+
+            'date' => 'required|date',
+            'time' => 'required',
+            'duration' => 'required|integer|min:1|max:12',
+            'quota' => 'required|integer|min:1',
+
+            'meeting_point' => 'nullable|string|max:255',
+            'contact_person' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:20',
+
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
+        ]);
+
+        // gabung date + time
+        $data['event_date'] = $data['date'] . ' ' . $data['time'];
+
+        // upload image
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('events', 'public');
+        }
+
+        // set organizer
+        $data['organizer_id'] = auth()->id();
+
+        // mapping phone
+        $data['contact_phone'] = $data['phone'] ?? null;
+
+        // hapus field sementara
+        unset($data['date'], $data['time'], $data['phone']);
+
+        // simpan
+        $event = Event::create($data);
+
+        return redirect()
+            ->route('events.show', $event->id)
+            ->with('success', 'Event berhasil dibuat!');
+    }
+
+    public function register(Request $request, $id)
+    {
+        $event = Event::findOrFail($id);
+        
+        $alreadyRegistered = \App\Models\EventRegistration::where('event_id', $id)
+            ->where('user_id', auth()->id())
+            ->exists();
+            
+        if ($alreadyRegistered) {
+            return back()->with('error', 'You are already registered for this event.');
+        }
+
+        $totalVolunteers = $event->registrations()->count();
+        if ($totalVolunteers >= $event->quota) {
+            return back()->with('error', 'Sorry, the event is full.');
+        }
+
+        \App\Models\EventRegistration::create([
+            'event_id' => $event->id,
+            'user_id' => auth()->id(),
+            'status' => 'registered',
+        ]);
+
+        return back()->with('success', 'Successfully registered for the event!');
     }
 }

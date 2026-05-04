@@ -15,12 +15,7 @@ use App\Http\Controllers\DocumentationController;
 |--------------------------------------------------------------------------
 */
 Route::get('/', [LandingController::class, 'index']);
-
-/*
-|--------------------------------------------------------------------------
-| GUEST
-|--------------------------------------------------------------------------
-*/
+Route::get('/events', [EventController::class, 'index']) ->name('events.index');
 Route::middleware('guest')->group(function () {
 
     Route::get('/login', [LoginController::class, 'create'])
@@ -42,10 +37,16 @@ Route::middleware('guest')->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
-
+    Route::post('/events/{id}/register', [EventController::class, 'register'])
+    ->name('events.register');
+    
     Route::post('/logout', [LoginController::class, 'destroy'])
         ->name('logout');
 
+    Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
+    Route::post('/events', [EventController::class, 'store'])->name('events.store');
+    Route::post('/events/{id}/register', [EventController::class, 'register'])->name('events.register');
+    
     Route::get('/dashboard', function () {
         return redirect()->route(match (auth()->user()->role) {
             'volunteer' => 'volunteer.dashboard',

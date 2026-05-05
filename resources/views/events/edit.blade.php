@@ -165,14 +165,14 @@
 
             {{-- ACTION BUTTON --}}
             <div class="flex justify-end gap-3 mt-8">
-                <button type="button"
+                <button type="submit" name="action" value="draft"
                     class="px-6 py-2.5 border border-gray-300 rounded-md text-gray-700 font-medium text-sm hover:bg-gray-50 transition">
                     Save as Draft
                 </button>
 
-                <button type="submit"
+                <button type="submit" name="action" value="publish"
                     class="px-6 py-2.5 bg-black text-white rounded-md font-medium text-sm hover:bg-gray-800 transition">
-                    Edit Event
+                    @if($event->status === 'draft') Publish Event @else Edit Event @endif
                 </button>
             </div>
 

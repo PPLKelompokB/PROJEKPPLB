@@ -21,9 +21,20 @@
             {{-- TITLE SECTION --}}
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
                 <div class="flex justify-between items-start mb-4">
-                    <h1 class="text-[28px] font-semibold text-gray-900 leading-tight">{{ $event->title }}</h1>
+                    <div>
+                        <div class="mb-2">
+                            @if($event->completion_status === 'Upcoming')
+                                <span class="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">Upcoming</span>
+                            @elseif($event->completion_status === 'Ongoing')
+                                <span class="inline-flex items-center rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Ongoing</span>
+                            @else
+                                <span class="inline-flex items-center rounded-full bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">Finished</span>
+                            @endif
+                        </div>
+                        <h1 class="text-[28px] font-semibold text-gray-900 leading-tight">{{ $event->title }}</h1>
+                    </div>
                     
-                    <div class="flex gap-2">
+                    <div class="flex gap-2 shrink-0">
                         @if(!auth()->check() || auth()->user()->role === 'volunteer')
                         <button class="bg-black text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 hover:bg-gray-800 transition">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
@@ -118,7 +129,7 @@
         <div class="lg:col-span-1">
             
             {{-- REGISTRATION CARD --}}
-            @if(!auth()->check() || auth()->user()->role === 'volunteer')
+            @if((!auth()->check() || auth()->user()->role === 'volunteer') && !\Carbon\Carbon::parse($event->event_date)->isPast())
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
                 <div class="text-center mb-6">
                     <h2 class="text-2xl font-semibold text-gray-900">Free</h2>
@@ -155,9 +166,9 @@
                             Event Full
                         </button>
                     @else
-                        <form action="{{ route('events.register', $event->id) }}" method="POST">
+                        <form id="registerForm" action="{{ route('events.register', $event->id) }}" method="POST">
                             @csrf
-                            <button type="submit" class="w-full bg-black text-white py-2.5 rounded-md text-sm font-medium hover:bg-gray-800 transition">
+                            <button type="button" onclick="openConfirmModal()" class="w-full bg-black text-white py-2.5 rounded-md text-sm font-medium hover:bg-gray-800 transition">
                                 Register Now
                             </button>
                         </form>
@@ -168,9 +179,6 @@
                     </a>
                 @endauth
 
-                <div class="text-center mt-4">
-                    <a href="#" class="text-xs text-gray-500 underline hover:text-gray-800 transition">Add to Calendar</a>
-                </div>
             </div>
             @endif
 
@@ -244,4 +252,55 @@
 
     </div>
 </div>
+
+{{-- MODALS --}}
+<!-- Registration Confirmation Modal -->
+<div id="confirmModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-sm mx-4 shadow-xl transform transition-all">
+        <h3 class="text-lg font-semibold text-gray-900 mb-6 text-center">Are you sure you want to register this event?</h3>
+        <div class="flex gap-4">
+            <button type="button" onclick="closeConfirmModal()" class="flex-1 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
+                Cancel
+            </button>
+            <button type="button" onclick="submitRegistration()" class="flex-1 py-2.5 bg-black rounded-lg text-sm font-medium text-white hover:bg-gray-800 transition">
+                Register!
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+@if(session('success') && session('success') == 'Berhasil mendaftar!')
+<div id="successModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-sm mx-4 shadow-xl transform transition-all text-center">
+        <h3 class="text-lg font-semibold text-gray-900 mb-6">You have successfully registered for this event.</h3>
+        <button type="button" onclick="closeSuccessModal()" class="w-full py-2.5 bg-black rounded-lg text-sm font-medium text-white hover:bg-gray-800 transition">
+            Thanks!
+        </button>
+    </div>
+</div>
+@endif
+
+@push('scripts')
+<script>
+    function openConfirmModal() {
+        document.getElementById('confirmModal').classList.remove('hidden');
+        document.getElementById('confirmModal').classList.add('flex');
+    }
+
+    function closeConfirmModal() {
+        document.getElementById('confirmModal').classList.add('hidden');
+        document.getElementById('confirmModal').classList.remove('flex');
+    }
+
+    function submitRegistration() {
+        document.getElementById('registerForm').submit();
+    }
+
+    function closeSuccessModal() {
+        document.getElementById('successModal').style.display = 'none';
+    }
+</script>
+@endpush
+
 @endsection

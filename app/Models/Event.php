@@ -52,4 +52,19 @@ class Event extends Model
 
         return 'upcoming';
     }
+
+    public function getCompletionStatusAttribute()
+    {
+        $start = \Carbon\Carbon::parse($this->event_date);
+        $end = $start->copy()->addHours($this->duration);
+        $now = now();
+
+        if ($now < $start) {
+            return 'Upcoming';
+        } elseif ($now >= $start && $now <= $end) {
+            return 'Ongoing';
+        } else {
+            return 'Finished';
+        }
+    }
 }

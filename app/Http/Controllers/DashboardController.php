@@ -7,21 +7,10 @@ use App\Models\Event;
 use App\Models\User;
 use App\Models\EventRegistration;
 use App\Models\Attendance;
+use App\Models\Point;
 
 class DashboardController extends Controller
 {
-    public function index()
-    {
-        $user = Auth::user();
-
-        return match ($user->role) {
-            'admin' => redirect()->route('dashboard.admin'),
-            'organizer' => redirect()->route('dashboard.organizer'),
-            'volunteer' => redirect()->route('dashboard.volunteer'),
-            default => redirect()->route('login'),
-        };
-    }
-
     // ========================
     // VOLUNTEER
     // ========================
@@ -41,9 +30,17 @@ class DashboardController extends Controller
             $r->event && $r->event->event_date <= now()
         );
 
+        // 🔥 FIX STATUS → present
         $totalHours = Attendance::where('user_id', $user->id)
-            ->where('status', 'hadir')
+            ->where('status', 'present')
             ->count() * 2;
+
+        $totalPoints = $user->points ?? 0;
+
+        $pointHistory = Point::with('event')
+            ->where('user_id', $user->id)
+            ->latest()
+            ->get();
 
         return view('dashboard.volunteer.dashboard', [
             'user' => $user,
@@ -51,6 +48,8 @@ class DashboardController extends Controller
             'upcomingEvents' => $upcomingEvents,
             'history' => $history,
             'totalHours' => $totalHours,
+            'totalPoints' => $totalPoints,
+            'pointHistory' => $pointHistory,
         ]);
     }
 

@@ -10,7 +10,11 @@ class LoginController extends Controller
 {
     public function create()
     {
-        return view('auth.login');
+        return view('auth.login', [
+            'events' => \App\Models\Event::latest()->take(6)->get(),
+            'totalEvents' => \App\Models\Event::count(),
+            'totalVolunteers' => \App\Models\User::where('role', 'volunteer')->count(),
+        ]);
     }
 
     public function store(Request $request)

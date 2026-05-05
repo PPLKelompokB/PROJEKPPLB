@@ -5,9 +5,57 @@ namespace App\Http\Controllers;
 use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Models\EventRegistration;
 
 class EventController extends Controller
-{
+{   
+    public function index(Request $request)
+    {
+        $query = Event::with('organizer')->withCount('registrations');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('location', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('location')) {
+            $query->where('location', 'like', '%' . $request->location . '%');
+        }
+
+        if ($request->filled('date')) {
+            if ($request->date === 'today') {
+                $query->whereDate('event_date', \Carbon\Carbon::today());
+            } elseif ($request->date === 'this_week') {
+                $query->whereBetween('event_date', [
+                    \Carbon\Carbon::now()->startOfWeek(),
+                    \Carbon\Carbon::now()->endOfWeek()
+                ]);
+            } elseif ($request->date === 'this_month') {
+                $query->whereMonth('event_date', \Carbon\Carbon::now()->month)
+                      ->whereYear('event_date', \Carbon\Carbon::now()->year);
+            }
+        }
+
+        if ($request->filled('sort')) {
+            if ($request->sort === 'latest') {
+                $query->latest('event_date');
+            } else {
+                $query->oldest('event_date');
+            }
+        } else {
+            $query->oldest('event_date'); // Default matches 'Earliest' option in UI
+        }
+
+        $events = $query->paginate(6)->withQueryString();
+        $locations = \App\Models\Event::select('location')->whereNotNull('location')->distinct()->pluck('location')->sort();
+
+        return view('events.index', compact('events', 'locations'));
+    }
+
     public function show($id)
     {
         $event = Event::with(['organizer', 'registrations.user'])
@@ -53,10 +101,23 @@ class EventController extends Controller
     public function detail($id)
     {
         $event = Event::where('organizer_id', auth()->id())
-            ->with('organizer')
+            ->with(['organizer', 'registrations.user'])
             ->findOrFail($id);
 
-        return view('events.detail-organizer', compact('event'));
+        $user = auth()->user();
+        $totalVolunteers = $event->registrations->count();
+        
+        $isRegistered = false;
+        if ($user) {
+            $isRegistered = $event->registrations
+                ->where('user_id', $user->id)
+                ->where('status', 'registered')
+                ->isNotEmpty();
+        }
+        
+        $isFull = $totalVolunteers >= $event->quota;
+
+        return view('events.detail', compact('event', 'totalVolunteers', 'isRegistered', 'isFull'));
     }
 
     public function edit($id)
@@ -84,10 +145,15 @@ class EventController extends Controller
             ->get()
             ->keyBy('user_id');
 
+        $allEvents = \App\Models\Event::where('organizer_id', auth()->id())
+            ->latest()
+            ->get(['id', 'title', 'event_date']);
+
         return view('events.participants', [
             'event' => $event,
             'participants' => $participants,
-            'attendanceMap' => $attendanceMap
+            'attendanceMap' => $attendanceMap,
+            'allEvents' => $allEvents
         ]);
     }
 
@@ -138,4 +204,92 @@ class EventController extends Controller
             ->route('events.detail', $event->id)
             ->with('success', 'Event berhasil diupdate');
     }
+    public function register($id)
+    {
+        $user = auth()->user();
+
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        $event = Event::findOrFail($id);
+
+        // cek apakah sudah daftar
+        $alreadyRegistered = EventRegistration::where('user_id', $user->id)
+            ->where('event_id', $id)
+            ->where('status', 'registered')
+            ->exists();
+
+        if ($alreadyRegistered) {
+            return back()->with('error', 'Kamu sudah terdaftar di event ini');
+        }
+
+        // cek quota penuh
+        if ($event->registrations()->count() >= $event->quota) {
+            return back()->with('error', 'Kuota event sudah penuh');
+        }
+
+        if ($event->event_date < now()) {
+            return back()->with('error', 'Event sudah selesai');
+        }
+
+        EventRegistration::create([
+            'user_id' => $user->id,
+            'event_id' => $id,
+            'status' => 'registered'
+        ]);
+
+        return redirect()->route('events.show', $id)
+            ->with('success', 'Berhasil mendaftar!');
+    }
+
+    public function create()
+    {
+        return view('events.create');
+    }
+
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'location' => 'required|string|max:255',
+
+            'date' => 'required|date',
+            'time' => 'required',
+            'duration' => 'required|integer|min:1|max:12',
+            'quota' => 'required|integer|min:1',
+
+            'meeting_point' => 'nullable|string|max:255',
+            'contact_person' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:20',
+
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
+        ]);
+
+        // gabung date + time
+        $data['event_date'] = $data['date'] . ' ' . $data['time'];
+
+        // upload image
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('events', 'public');
+        }
+
+        // set organizer
+        $data['organizer_id'] = auth()->id();
+
+        // mapping phone
+        $data['contact_phone'] = $data['phone'] ?? null;
+
+        // hapus field sementara
+        unset($data['date'], $data['time'], $data['phone']);
+
+        // simpan
+        $event = Event::create($data);
+
+        return redirect()
+            ->route('events.show', $event->id)
+            ->with('success', 'Event berhasil dibuat!');
+    }
+
 }

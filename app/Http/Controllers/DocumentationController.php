@@ -6,26 +6,45 @@ use Illuminate\Http\Request;
 use App\Models\Documentation;
 use App\Models\Event;
 use App\Models\Notification;
+use App\Models\Point;
+use App\Models\User;
+use App\Models\EventRegistration;
+use Illuminate\Support\Facades\Storage;
 
 class DocumentationController extends Controller
 {
     public function store(Request $request)
     {
+        // ✅ Validasi sesuai PBI
         $request->validate([
-            'event_id' => 'required|exists:events,id'
+            'event_id' => 'required|exists:events,id',
+            'file' => 'required|file|mimes:jpg,jpeg,png|max:2048',
+            'note' => 'nullable|string|max:255'
         ]);
 
         $event = Event::findOrFail($request->event_id);
 
+        // ✅ Authorization (biar tidak sembarang upload)
+        if (auth()->id() !== $event->organizer_id) {
+            return response()->json([
+                'message' => 'Tidak diizinkan upload dokumentasi untuk event ini'
+            ], 403);
+        }
+
+        // ✅ Upload file beneran
+        $filePath = $request->file('file')->store('documentations', 'public');
+
+        // ✅ Simpan ke database
         $documentation = Documentation::create([
             'event_id' => $event->id,
-            'organizer_id' => $event->organizer_id, 
-            'file_path' => 'dummy.jpg',
+            'organizer_id' => $event->organizer_id,
+            'file_path' => $filePath,
+            'note' => $request->note,
             'status' => 'pending'
         ]);
 
         return response()->json([
-            'message' => 'Dokumentasi berhasil diupload (dummy)',
+            'message' => 'Dokumentasi berhasil diupload',
             'data' => $documentation
         ], 201);
     }
@@ -33,7 +52,7 @@ class DocumentationController extends Controller
     public function index()
     {
         return response()->json(
-            Documentation::with('event')->get()
+            Documentation::with('event')->latest()->get()
         );
     }
 
@@ -45,8 +64,9 @@ class DocumentationController extends Controller
 
         $documentation = Documentation::findOrFail($id);
 
-        $documentation->status = $request->status;
-        $documentation->save();
+        $documentation->update([
+            'status' => $request->status
+        ]);
 
         $event = Event::find($documentation->event_id);
 
@@ -56,15 +76,42 @@ class DocumentationController extends Controller
             ], 404);
         }
 
+        // ✅ Notifikasi tetap dipakai (sudah bagus)
         Notification::create([
             'user_id' => $event->organizer_id,
-            'title' => 'Hasil Verifikasi Dokumentasi',
+            'title' => $request->status === 'approved' ? 'Documentation Approved' : 'Documentation Rejected',
             'message' => $request->status === 'approved'
-                ? 'Dokumentasi kegiatan Anda telah disetujui.'
-                : 'Dokumentasi ditolak, silakan upload ulang.',
+                ? 'Your event documentation has been approved by admin.'
+                : 'Your event documentation has been rejected. Please re-upload.',
             'type' => $request->status === 'approved' ? 'success' : 'error',
             'is_read' => false
         ]);
+
+        // 🔥 AUTOMATIC POINT AWARDING
+        if ($request->status === 'approved') {
+            $registrations = EventRegistration::where('event_id', $event->id)->get();
+            $pointsEarned = $event->duration * 10;
+
+            foreach ($registrations as $registration) {
+                // Check if point has already been awarded to avoid duplicate
+                $existingPoint = Point::where('event_id', $event->id)
+                                      ->where('user_id', $registration->user_id)
+                                      ->first();
+                if (!$existingPoint) {
+                    Point::create([
+                        'user_id' => $registration->user_id,
+                        'event_id' => $event->id,
+                        'points' => $pointsEarned
+                    ]);
+
+                    $user = User::find($registration->user_id);
+                    if ($user) {
+                        $user->points += $pointsEarned;
+                        $user->save();
+                    }
+                }
+            }
+        }
 
         return response()->json([
             'message' => 'Verifikasi berhasil + notifikasi terkirim',

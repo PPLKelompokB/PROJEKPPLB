@@ -10,7 +10,7 @@ use App\Models\Point;
 use App\Models\User;
 use App\Models\EventRegistration;
 use Illuminate\Support\Facades\Storage;
-
+use Illuminate\Support\Str;
 class DocumentationController extends Controller
 {
     public function store(Request $request)
@@ -76,13 +76,17 @@ class DocumentationController extends Controller
             ], 404);
         }
 
-        // ✅ Notifikasi tetap dipakai (sudah bagus)
+        // ✅ Notifikasi dibedakan untuk dokumentasi yang berbeda (berdasarkan feedback)
+        $docDetail = $documentation->note ? " ('" . Str::limit($documentation->note, 30) . "')" : " (ID: " . $documentation->id . ")";
+        
         Notification::create([
             'user_id' => $event->organizer_id,
-            'title' => $request->status === 'approved' ? 'Documentation Approved' : 'Documentation Rejected',
+            'title' => $request->status === 'approved' 
+                ? 'Documentation Approved: ' . Str::limit($event->title, 20) 
+                : 'Documentation Rejected: ' . Str::limit($event->title, 20),
             'message' => $request->status === 'approved'
-                ? 'Your event documentation has been approved by admin.'
-                : 'Your event documentation has been rejected. Please re-upload.',
+                ? 'Your event documentation for "' . $event->title . '"' . $docDetail . ' has been approved by admin.'
+                : 'Your event documentation for "' . $event->title . '"' . $docDetail . ' has been rejected. Please review and re-upload.',
             'type' => $request->status === 'approved' ? 'success' : 'error',
             'is_read' => false
         ]);

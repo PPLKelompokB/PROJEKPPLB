@@ -21,7 +21,7 @@
     {{-- CARD FORM --}}
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
 
-        <form action="{{ route('events.store') }}" method="POST" enctype="multipart/form-data">
+        <form id="eventForm" action="{{ route('events.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
 
             {{-- IMAGE UPLOAD --}}
@@ -151,4 +151,16 @@
     </div>
 
 </div>
+
+@push('scripts')
+<script>
+    document.getElementById('eventForm').addEventListener('submit', function(e) {
+        let quota = document.querySelector('input[name="quota"]').value;
+        if (quota <= 0) {
+            e.preventDefault();
+            alert('Data volunteer quota harus lebih dari 0');
+        }
+    });
+</script>
+@endpush
 @endsection

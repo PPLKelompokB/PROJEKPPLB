@@ -11,7 +11,7 @@ class EventController extends Controller
 {   
     public function index(Request $request)
     {
-        $query = Event::with('organizer')->withCount('registrations');
+        $query = Event::with('organizer')->withCount('registrations')->where('status', 'published');
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -63,6 +63,10 @@ class EventController extends Controller
 
         if (!$event) {
             return redirect('/')->with('error', 'Event tidak ditemukan');
+        }
+
+        if ($event->status === 'draft' && (!auth()->check() || auth()->id() !== $event->organizer_id)) {
+            abort(403, 'Unauthorized action.');
         }
 
         $user = auth()->user();
@@ -195,14 +199,18 @@ class EventController extends Controller
         }
 
         $data['contact_phone'] = $data['phone'] ?? null;
+        
+        $data['status'] = $request->input('action') === 'draft' ? 'draft' : 'published';
 
         unset($data['date'], $data['time'], $data['phone']);
 
         $event->update($data);
 
+        $message = $data['status'] === 'draft' ? 'Event berhasil disimpan sebagai draft' : 'Event berhasil diupdate';
+
         return redirect()
             ->route('events.detail', $event->id)
-            ->with('success', 'Event berhasil diupdate');
+            ->with('success', $message);
     }
     public function register($id)
     {
@@ -281,15 +289,20 @@ class EventController extends Controller
         // mapping phone
         $data['contact_phone'] = $data['phone'] ?? null;
 
+        // status draft / publish
+        $data['status'] = $request->input('action') === 'draft' ? 'draft' : 'published';
+
         // hapus field sementara
         unset($data['date'], $data['time'], $data['phone']);
 
         // simpan
         $event = Event::create($data);
 
+        $message = $data['status'] === 'draft' ? 'Event berhasil disimpan sebagai draft!' : 'Event berhasil dibuat!';
+
         return redirect()
             ->route('events.show', $event->id)
-            ->with('success', 'Event berhasil dibuat!');
+            ->with('success', $message);
     }
 
 }

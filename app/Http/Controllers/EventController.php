@@ -47,13 +47,12 @@ class EventController extends Controller
                 $query->oldest('event_date');
             }
         } else {
-            $query->oldest('event_date'); // Default matches 'Earliest' option in UI
+            $query->oldest('event_date');
         }
 
         $events = $query->paginate(6)->withQueryString();
-        $locations = \App\Models\Event::select('location')->whereNotNull('location')->distinct()->pluck('location')->sort();
 
-        return view('events.index', compact('events', 'locations'));
+        return view('events.index', compact('events'));
     }
 
     public function show($id)
@@ -189,7 +188,6 @@ class EventController extends Controller
 
         if ($request->hasFile('image')) {
 
-            // hapus lama (optional)
             if ($event->image) {
                 Storage::delete($event->image);
             }
@@ -212,6 +210,7 @@ class EventController extends Controller
             ->route('events.detail', $event->id)
             ->with('success', $message);
     }
+
     public function register($id)
     {
         $user = auth()->user();
@@ -222,7 +221,6 @@ class EventController extends Controller
 
         $event = Event::findOrFail($id);
 
-        // cek apakah sudah daftar
         $alreadyRegistered = EventRegistration::where('user_id', $user->id)
             ->where('event_id', $id)
             ->where('status', 'registered')
@@ -232,7 +230,6 @@ class EventController extends Controller
             return back()->with('error', 'Kamu sudah terdaftar di event ini');
         }
 
-        // cek quota penuh
         if ($event->registrations()->count() >= $event->quota) {
             return back()->with('error', 'Kuota event sudah penuh');
         }
@@ -275,27 +272,20 @@ class EventController extends Controller
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
         ]);
 
-        // gabung date + time
         $data['event_date'] = $data['date'] . ' ' . $data['time'];
 
-        // upload image
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('events', 'public');
         }
 
-        // set organizer
         $data['organizer_id'] = auth()->id();
 
-        // mapping phone
         $data['contact_phone'] = $data['phone'] ?? null;
 
-        // status draft / publish
         $data['status'] = $request->input('action') === 'draft' ? 'draft' : 'published';
 
-        // hapus field sementara
         unset($data['date'], $data['time'], $data['phone']);
 
-        // simpan
         $event = Event::create($data);
 
         $message = $data['status'] === 'draft' ? 'Event berhasil disimpan sebagai draft!' : 'Event berhasil dibuat!';
@@ -304,5 +294,4 @@ class EventController extends Controller
             ->route('events.show', $event->id)
             ->with('success', $message);
     }
-
 }

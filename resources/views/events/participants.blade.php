@@ -98,7 +98,15 @@
                         @php
                             $user = $reg->user;
                             $attendance = $attendanceMap[$user->id] ?? null;
-                            $status = $attendance->status ?? 'registered';
+                            
+                            $isStarted = now() >= \Carbon\Carbon::parse($event->event_date);
+                            $isFinished = now() > \Carbon\Carbon::parse($event->event_date)->addHours($event->duration);
+                            
+                            if ($attendance) {
+                                $status = $attendance->status;
+                            } else {
+                                $status = $isStarted ? 'absent' : 'registered';
+                            }
                         @endphp
 
                         <tr class="hover:bg-gray-50 transition duration-150">
@@ -139,16 +147,22 @@
                             <td class="py-4 px-6 text-center">
 
                                 {{-- EVENT BELUM TERJADI --}}
-                                @if($event->event_date > now())
+                                @if(!$isStarted)
                                     <span class="text-[11px] text-gray-400 font-medium">Event belum mulai</span>
 
-                                {{-- SUDAH PRESENT/ABSENT --}}
-                                @elseif($status === 'present' || $status === 'absent')
+                                {{-- EVENT SUDAH SELESAI --}}
+                                @elseif($isFinished)
+                                    <span class="inline-block text-[11px] font-semibold text-gray-600 border border-gray-200 px-4 py-1.5 rounded-lg bg-white shadow-sm">
+                                        Event Selesai
+                                    </span>
+
+                                {{-- SUDAH PRESENT SECARA MANUAL --}}
+                                @elseif(isset($attendance) && $attendance->status === 'present')
                                     <span class="inline-block text-[11px] font-semibold text-gray-600 border border-gray-200 px-4 py-1.5 rounded-lg bg-white shadow-sm">
                                         Already Marked
                                     </span>
 
-                                {{-- BELUM DI MARK --}}
+                                {{-- BELUM DI MARK (SEDANG BERLANGSUNG) --}}
                                 @else
                                     <div class="flex justify-center gap-2">
                                         <form method="POST" action="{{ route('attendance.mark', $reg->id) }}">
@@ -158,9 +172,6 @@
                                                 Mark Present
                                             </button>
                                         </form>
-                                        <a href="mailto:{{ $user->email }}" class="border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 px-4 py-1.5 rounded-lg text-[11px] font-semibold shadow-sm transition">
-                                            Contact
-                                        </a>
                                     </div>
                                 @endif
 
@@ -227,9 +238,15 @@
 
     {{-- BOTTOM STATS CARDS --}}
     @php
-        $present = $participants->filter(fn($p) => optional($p->attendance)->status === 'present')->count();
-        $absent = $participants->filter(fn($p) => optional($p->attendance)->status === 'absent')->count();
         $total = $participants->total();
+        $present = \App\Models\Attendance::where('event_id', $event->id)->where('status', 'present')->count();
+        $isEventStarted = now() >= \Carbon\Carbon::parse($event->event_date);
+        
+        if ($isEventStarted) {
+            $absent = $total - $present;
+        } else {
+            $absent = \App\Models\Attendance::where('event_id', $event->id)->where('status', 'absent')->count();
+        }
     @endphp
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">

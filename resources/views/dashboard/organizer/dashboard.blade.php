@@ -35,7 +35,6 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                 </div>
-                <span class="text-[11px] font-semibold text-gray-500 tracking-wide">+12%</span>
             </div>
             <h3 class="text-3xl font-semibold text-gray-900 mt-5">{{ number_format($totalEvents) }}</h3>
             <p class="text-xs font-medium text-gray-500 mt-1">Total Events Created</p>
@@ -49,7 +48,6 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                 </div>
-                <span class="text-[11px] font-semibold text-gray-500 tracking-wide">+28%</span>
             </div>
             <h3 class="text-3xl font-semibold text-gray-900 mt-5">{{ number_format($totalVolunteers) }}</h3>
             <p class="text-xs font-medium text-gray-500 mt-1">Total Volunteers Participated</p>
@@ -63,7 +61,6 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
                     </svg>
                 </div>
-                <span class="text-[11px] font-semibold text-gray-500 tracking-wide">Live</span>
             </div>
             <h3 class="text-3xl font-semibold text-gray-900 mt-5">{{ number_format($activeEvents) }}</h3>
             <p class="text-xs font-medium text-gray-500 mt-1">Active Events</p>
@@ -183,28 +180,49 @@
         </div>
 
         <!-- Pagination -->
+        @if($events->hasPages())
         <div class="p-4 border-t border-gray-100 flex justify-between items-center bg-white">
             <p class="text-[11px] font-medium text-gray-500">
-                Showing 1 to {{ count($events) }} of {{ $totalEvents }} events
+                Showing {{ $events->firstItem() }} to {{ $events->lastItem() }} of {{ $events->total() }} events
             </p>
             <div class="flex items-center gap-1.5">
-                <button class="w-8 h-8 flex items-center justify-center border border-gray-200 rounded text-gray-500 hover:bg-gray-50 transition">
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-                </button>
-                <button class="w-8 h-8 flex items-center justify-center bg-black text-white rounded font-medium text-xs shadow-sm">
-                    1
-                </button>
-                <button class="w-8 h-8 flex items-center justify-center border border-gray-200 rounded text-gray-600 hover:bg-gray-50 transition font-medium text-xs">
-                    2
-                </button>
-                <button class="w-8 h-8 flex items-center justify-center border border-gray-200 rounded text-gray-600 hover:bg-gray-50 transition font-medium text-xs">
-                    3
-                </button>
-                <button class="w-8 h-8 flex items-center justify-center border border-gray-200 rounded text-gray-500 hover:bg-gray-50 transition">
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                </button>
+                {{-- Previous --}}
+                @if ($events->onFirstPage())
+                    <button class="w-8 h-8 flex items-center justify-center border border-gray-200 rounded text-gray-400 cursor-not-allowed">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    </button>
+                @else
+                    <a href="{{ $events->previousPageUrl() }}" class="w-8 h-8 flex items-center justify-center border border-gray-200 rounded text-gray-500 hover:bg-gray-50 transition">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    </a>
+                @endif
+
+                {{-- Pages --}}
+                @foreach ($events->getUrlRange(1, $events->lastPage()) as $page => $url)
+                    @if ($page == $events->currentPage())
+                        <button class="w-8 h-8 flex items-center justify-center bg-black text-white rounded font-medium text-xs shadow-sm">
+                            {{ $page }}
+                        </button>
+                    @else
+                        <a href="{{ $url }}" class="w-8 h-8 flex items-center justify-center border border-gray-200 rounded text-gray-600 hover:bg-gray-50 transition font-medium text-xs">
+                            {{ $page }}
+                        </a>
+                    @endif
+                @endforeach
+
+                {{-- Next --}}
+                @if ($events->hasMorePages())
+                    <a href="{{ $events->nextPageUrl() }}" class="w-8 h-8 flex items-center justify-center border border-gray-200 rounded text-gray-500 hover:bg-gray-50 transition">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </a>
+                @else
+                    <button class="w-8 h-8 flex items-center justify-center border border-gray-200 rounded text-gray-400 cursor-not-allowed">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </button>
+                @endif
             </div>
         </div>
+        @endif
 
     </div>
 

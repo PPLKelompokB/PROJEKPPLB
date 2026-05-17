@@ -60,16 +60,25 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        $events = Event::with('registrations')
+        $allEvents = Event::with('registrations')
             ->where('organizer_id', $user->id)
             ->latest()
             ->get();
+            
+        $events = Event::with('registrations')
+            ->where('organizer_id', $user->id)
+            ->latest()
+            ->paginate(5);
 
         return view('dashboard.organizer.dashboard', [
             'events' => $events,
-            'totalEvents' => $events->count(),
-            'totalVolunteers' => EventRegistration::whereIn('event_id', $events->pluck('id'))->count(),
-            'activeEvents' => $events->where('event_date', '>', now())->count(),
+            'totalEvents' => $allEvents->count(),
+            'totalVolunteers' => EventRegistration::whereIn('event_id', $allEvents->pluck('id'))->count(),
+            'activeEvents' => $allEvents->filter(function($e) {
+                $start = \Carbon\Carbon::parse($e->event_date);
+                $end = $start->copy()->addHours($e->duration);
+                return now() >= $start && now() <= $end;
+            })->count(),
         ]);
     }
 

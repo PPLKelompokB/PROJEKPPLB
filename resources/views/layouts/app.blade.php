@@ -75,6 +75,31 @@
         }
     });
 
+    function timeAgo(dateString) {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffSec = Math.floor(diffMs / 1000);
+        const diffMin = Math.floor(diffSec / 60);
+        const diffHour = Math.floor(diffMin / 60);
+        const diffDay = Math.floor(diffHour / 24);
+
+        if (diffDay > 0) {
+            const hoursLeft = diffHour % 24;
+            if (hoursLeft > 0) {
+                return `${diffDay} day${diffDay > 1 ? 's' : ''} ${hoursLeft} hour${hoursLeft > 1 ? 's' : ''} ago`;
+            }
+            return `${diffDay} day${diffDay > 1 ? 's' : ''} ago`;
+        }
+        if (diffHour > 0) {
+            return `${diffHour} hour${diffHour > 1 ? 's' : ''} ago`;
+        }
+        if (diffMin > 0) {
+            return `${diffMin} minute${diffMin > 1 ? 's' : ''} ago`;
+        }
+        return `Just now`;
+    }
+
     async function fetchNotifications() {
         try {
             const res = await fetch('/api/notifications');
@@ -100,26 +125,18 @@
             data.data.forEach(n => {
                 if (!n.is_read) unread++;
 
-                // Menyesuaikan style jika notifikasi berupa ACC/REJECT documentation event
-                let icon = '';
-                let bgClass = !n.is_read ? 'bg-blue-50/50 border-l-4 border-l-blue-500' : 'hover:bg-gray-50 border-l-4 border-l-transparent';
-                
-                if (n.type === 'error' || (n.title && n.title.toLowerCase().includes('reject'))) {
-                    icon = `<div class="bg-red-100 text-red-600 p-2.5 rounded-full shrink-0 shadow-sm"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></div>`;
-                } else if (n.type === 'success' || (n.title && n.title.toLowerCase().includes('approv') || n.title && n.title.toLowerCase().includes('acc'))) {
-                    icon = `<div class="bg-green-100 text-green-600 p-2.5 rounded-full shrink-0 shadow-sm"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></div>`;
-                } else {
-                    icon = `<div class="bg-blue-100 text-blue-600 p-2.5 rounded-full shrink-0 shadow-sm"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>`;
-                }
+                let bgClass = !n.is_read ? 'bg-slate-50 relative' : 'bg-white hover:bg-slate-50 relative';
+                let indicator = !n.is_read ? '<div class="absolute left-0 top-0 bottom-0 w-1 bg-[#dbeafe]"></div>' : '';
 
                 html += `
-                    <div class="p-4 border-b border-gray-100 ${bgClass} cursor-pointer transition-all flex gap-3 items-start relative group"
-                        onclick="markAsRead(${n.id})">
-                        ${icon}
-                        <div class="flex-1">
-                            <p class="text-sm font-semibold text-gray-900 leading-tight">${n.title}</p>
-                            <p class="text-[13px] text-gray-500 mt-1 leading-snug">${n.message}</p>
-                            ${!n.is_read ? '<span class="absolute top-4 right-4 w-2 h-2 rounded-full bg-blue-500 shadow-sm"></span>' : ''}
+                    <div class="p-4 border-b border-gray-100 ${bgClass} cursor-pointer transition-all flex flex-col"
+                        onclick="handleNotifClick(${n.id}, '${n.action_url || ''}')">
+                        ${indicator}
+                        <p class="text-[15px] font-bold text-[#334155] leading-snug">${n.title}</p>
+                        <p class="text-[14px] text-[#475569] mt-1 leading-snug">${n.message}</p>
+                        <p class="text-[13px] font-bold text-[#64748b] mt-2">${timeAgo(n.created_at)}</p>
+                        <div class="text-right mt-1">
+                            <span class="text-[14px] ${n.action_url ? 'text-[#64748b] hover:text-[#334155]' : 'text-transparent'}">View full notification</span>
                         </div>
                     </div>
                 `;
@@ -143,6 +160,32 @@
 
     async function markAsRead(id) {
         await fetch(`/api/notifications/${id}/read`, {
+            method: 'PUT',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        });
+
+        fetchNotifications();
+    }
+
+    function handleNotifClick(id, actionUrl) {
+        fetch(`/api/notifications/${id}/read`, {
+            method: 'PUT',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        }).then(() => {
+            if (actionUrl && actionUrl !== '') {
+                window.location.href = actionUrl;
+            } else {
+                fetchNotifications();
+            }
+        });
+    }
+
+    async function markAllAsRead() {
+        await fetch(`/api/notifications/read-all`, {
             method: 'PUT',
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'

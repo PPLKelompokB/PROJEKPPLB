@@ -64,6 +64,12 @@ class DocumentationController extends Controller
 
         $documentation = Documentation::findOrFail($id);
 
+        if ($documentation->status !== 'pending') {
+            return response()->json([
+                'message' => 'Status dokumentasi sudah tidak bisa diubah karena sudah di' . $documentation->status . '.'
+            ], 400);
+        }
+
         $documentation->update([
             'status' => $request->status
         ]);
@@ -77,7 +83,8 @@ class DocumentationController extends Controller
         }
 
         // ✅ Notifikasi dibedakan untuk dokumentasi yang berbeda (berdasarkan feedback)
-        $docDetail = $documentation->note ? " ('" . Str::limit($documentation->note, 30) . "')" : " (ID: " . $documentation->id . ")";
+        $fileName = basename($documentation->file_path);
+        $docDetail = $documentation->note ? " (Note: '" . Str::limit($documentation->note, 30) . "')" : " (File: " . $fileName . ")";
         
         Notification::create([
             'user_id' => $event->organizer_id,
@@ -85,9 +92,10 @@ class DocumentationController extends Controller
                 ? 'Documentation Approved: ' . Str::limit($event->title, 20) 
                 : 'Documentation Rejected: ' . Str::limit($event->title, 20),
             'message' => $request->status === 'approved'
-                ? 'Your event documentation for "' . $event->title . '"' . $docDetail . ' has been approved by admin.'
-                : 'Your event documentation for "' . $event->title . '"' . $docDetail . ' has been rejected. Please review and re-upload.',
+                ? 'Your event documentation for "' . $event->title . '"' . $docDetail . ' has been approved.'
+                : 'Your event documentation for "' . $event->title . '"' . $docDetail . ' has been rejected. Please review.',
             'type' => $request->status === 'approved' ? 'success' : 'error',
+            'action_url' => '/organizer/documentation/' . $event->id,
             'is_read' => false
         ]);
 

@@ -12,14 +12,14 @@
         </div>
         
         <div class="flex items-center gap-4 w-full md:w-auto">
-            <button onclick="submitAll('rejected')" class="flex-1 md:flex-none px-10 py-2.5 border border-gray-300 text-sm font-semibold rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-colors">
-                Reject
+            <button onclick="submitAll('rejected')" class="flex-1 md:flex-none px-8 py-2.5 border border-gray-300 text-sm font-semibold rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-colors {{ $event->documentations->where('status', 'pending')->count() == 0 ? 'opacity-50 cursor-not-allowed' : '' }}" {{ $event->documentations->where('status', 'pending')->count() == 0 ? 'disabled' : '' }}>
+                Reject All Pending
             </button>
-            <button onclick="submitAll('approved')" class="flex-1 md:flex-none inline-flex items-center justify-center px-10 py-2.5 border border-transparent text-sm font-semibold rounded-lg shadow-sm text-white bg-[#1a1c20] hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-colors gap-2">
+            <button onclick="submitAll('approved')" class="flex-1 md:flex-none inline-flex items-center justify-center px-8 py-2.5 border border-transparent text-sm font-semibold rounded-lg shadow-sm text-white bg-[#1a1c20] hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-colors gap-2 {{ $event->documentations->where('status', 'pending')->count() == 0 ? 'opacity-50 cursor-not-allowed' : '' }}" {{ $event->documentations->where('status', 'pending')->count() == 0 ? 'disabled' : '' }}>
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                 </svg>
-                Approve
+                Approve All Pending
             </button>
         </div>
     </div>
@@ -71,25 +71,42 @@
                     <p class="text-sm text-gray-700 leading-relaxed mb-3 flex-1">
                         {{ $doc->note ?? 'No description provided.' }}
                     </p>
-                    <p class="text-[11px] text-gray-500 mb-5">
-                        Uploaded: {{ \Carbon\Carbon::parse($doc->created_at)->format('M d, Y') }}
-                    </p>
+                    <div class="flex justify-between items-center mb-5">
+                        <p class="text-[11px] text-gray-500">
+                            Uploaded: {{ \Carbon\Carbon::parse($doc->created_at)->format('M d, Y') }}
+                        </p>
+                        @if($doc->status == 'approved')
+                            <span class="bg-black text-white px-2 py-0.5 rounded text-[10px] font-semibold tracking-wide capitalize">Approved</span>
+                        @elseif($doc->status == 'rejected')
+                            <span class="bg-gray-100 text-gray-500 border border-gray-200 px-2 py-0.5 rounded text-[10px] font-semibold tracking-wide capitalize">Rejected</span>
+                        @else
+                            <span class="bg-gray-50 text-gray-600 border border-gray-200 px-2 py-0.5 rounded text-[10px] font-semibold tracking-wide capitalize">Pending</span>
+                        @endif
+                    </div>
                     
                     <!-- Actions -->
-                    <div class="flex gap-3">
-                        <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank" class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#f3f4f6] hover:bg-gray-200 text-gray-700 text-[13px] font-medium rounded-md border border-transparent transition-colors">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div class="flex gap-2">
+                        <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank" class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#f3f4f6] hover:bg-gray-200 text-gray-700 text-[12px] font-medium rounded-md border border-transparent transition-colors">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                             </svg>
                             View
                         </a>
-                        <button type="button" class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#f3f4f6] hover:bg-red-50 hover:text-red-600 text-gray-700 text-[13px] font-medium rounded-md border border-transparent transition-colors">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        @if($doc->status == 'pending')
+                        <button type="button" onclick="submitSingle({{ $doc->id }}, 'rejected')" class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-white hover:bg-red-50 text-red-600 text-[12px] font-medium rounded-md border border-red-200 transition-colors">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                             </svg>
-                            Delete
+                            Reject
                         </button>
+                        <button type="button" onclick="submitSingle({{ $doc->id }}, 'approved')" class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-black hover:bg-gray-800 text-white text-[12px] font-medium rounded-md border border-transparent transition-colors">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            Approve
+                        </button>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -102,15 +119,42 @@
 </div>
 
 <script>
-    function submitAll(status) {
-        if (!confirm('Are you sure you want to ' + status + ' all documentations for this event?')) {
+    function submitSingle(id, status) {
+        if (!confirm('Are you sure you want to ' + status + ' this documentation?')) {
             return;
         }
         
-        const documentations = @json($event->documentations->pluck('id'));
+        fetch('/documentation/' + id + '/verify', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ status: status })
+        }).then(response => {
+            if(response.ok) {
+                alert('Successfully ' + status + ' documentation.');
+                location.reload();
+            } else {
+                response.json().then(data => {
+                    alert(data.message || 'An error occurred.');
+                });
+            }
+        }).catch(err => {
+            console.error(err);
+            alert('An error occurred.');
+        });
+    }
+
+    function submitAll(status) {
+        if (!confirm('Are you sure you want to ' + status + ' all pending documentations for this event?')) {
+            return;
+        }
+        
+        const documentations = @json($event->documentations->where('status', 'pending')->pluck('id')->values());
         
         if (documentations.length === 0) {
-            alert('No documentation to ' + status);
+            alert('No pending documentation to ' + status);
             return;
         }
         
@@ -122,15 +166,21 @@
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
                 body: JSON.stringify({ status: status })
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to verify documentation ' + id);
+                }
+                return response.json();
             });
         });
 
         Promise.all(promises).then(() => {
-            alert('Successfully ' + status + ' documentations.');
+            alert('Successfully ' + status + ' all pending documentations.');
             window.location.href = "{{ route('admin.documentation.index') }}";
         }).catch(err => {
             console.error(err);
-            alert('An error occurred.');
+            alert('An error occurred. Some documentations might not have been updated.');
+            location.reload();
         });
     }
 </script>

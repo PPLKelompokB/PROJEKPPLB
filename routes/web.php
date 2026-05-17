@@ -47,6 +47,7 @@ Route::middleware('auth')->group(function () {
         ->name('logout');
 
     Route::get('/api/notifications', [NotificationController::class, 'index']);
+    Route::put('/api/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
     Route::put('/api/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 
     Route::get('/events/create', [EventController::class, 'create'])->name('events.create');

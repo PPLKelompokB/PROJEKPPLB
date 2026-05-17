@@ -29,12 +29,12 @@ class AttendanceController extends Controller
 
         // ✅ simpan attendance
         $attendance = Attendance::updateOrCreate(
-            ['registration_id' => $registration->id],
             [
                 'user_id' => $registration->user_id,
-                'event_id' => $event->id,
-                'status' => $status,
-                'marked_at' => now()
+                'event_id' => $event->id
+            ],
+            [
+                'status' => $status
             ]
         );
 

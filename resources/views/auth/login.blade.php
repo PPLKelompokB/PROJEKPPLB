@@ -73,17 +73,6 @@
                     </div>
                 </div>
 
-                <!-- Remember Me & Forgot Password -->
-                <div class="flex items-center justify-between mt-2 mb-4">
-                    <label class="flex items-center cursor-pointer">
-                        <input type="checkbox" name="remember" class="w-3.5 h-3.5 border-gray-300 rounded text-black focus:ring-black">
-                        <span class="ml-2 text-[11px] text-gray-600 font-medium">Remember me</span>
-                    </label>
-                    <a href="#" class="text-[11px] font-bold text-gray-800 hover:underline">
-                        Forgot password?
-                    </a>
-                </div>
-
                 <div class="pt-2">
                     <button class="w-full bg-black hover:bg-gray-800 text-white py-3 rounded-lg text-sm font-medium transition duration-200">
                         Login

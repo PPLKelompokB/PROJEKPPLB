@@ -202,9 +202,6 @@
                                 </svg>
                             </div>
                         </div>
-                        <div class="p-3 border-t border-gray-100 text-center bg-white">
-                            <a href="#" class="text-[15px] text-[#992828] hover:text-red-900">View all notifications</a>
-                        </div>
                     </div>
                 </div>
             @endif

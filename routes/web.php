@@ -11,6 +11,8 @@ use App\Http\Controllers\DocumentationController;
 use App\Http\Controllers\AdminDocumentationController;
 use App\Http\Controllers\OrganizerDocumentationController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\LeaderboardController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -72,6 +74,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/volunteer/dashboard', [DashboardController::class, 'volunteer'])
             ->name('volunteer.dashboard');
     });
+
+
+    Route::get('/leaderboard', [LeaderboardController::class, 'index'])->name('leaderboard');
+    Route::get('/leaderboard/full', [LeaderboardController::class, 'full'])->name('leaderboard.full');
 
     /*
     |--------------------------------------------------------------------------

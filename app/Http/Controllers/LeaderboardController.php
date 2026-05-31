@@ -31,11 +31,19 @@ class LeaderboardController extends Controller
         return view('leaderboard.index', compact('topVolunteers', 'stats', 'userRank'));
     }
 
-    public function full()
+   public function full(Request $request)
     {
-        $volunteers = User::where('role', 'volunteer')
-            ->orderBy('points', 'desc')
-            ->paginate(25);
+        $sort = $request->input('sort', 'desc');
+
+        $query = User::where('role', 'volunteer');
+
+        if ($sort === 'asc') {
+            $query->orderBy('points', 'asc'); 
+        } else {
+            $query->orderBy('points', 'desc');
+        }
+
+        $volunteers = $query->paginate(25)->withQueryString(); 
 
         return view('leaderboard.full', compact('volunteers'));
     }

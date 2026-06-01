@@ -168,9 +168,9 @@
                                 </div>
                                 <div class="flex items-center gap-4">
                                     <span class="text-[11px] font-semibold text-gray-600">+{{ $item->event->duration * 10 }} pts</span>
-                                    <button class="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-3 py-1.5 rounded-lg text-[10px] font-semibold transition">
+                                    <a href="/dashboard" class="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-3 py-1.5 rounded-lg text-[10px] font-semibold transition">
                                         Certificate
-                                    </button>
+                                    </a>
                                 </div>
                             </div>
                         @endif

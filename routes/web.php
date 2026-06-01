@@ -74,6 +74,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/volunteer/dashboard', [DashboardController::class, 'volunteer'])
             ->name('volunteer.dashboard');
     });
+    Route::get('/history', [\App\Http\Controllers\EventController::class, 'history'])->name('events.history');
 
 
     Route::get('/leaderboard', [LeaderboardController::class, 'index'])->name('leaderboard');

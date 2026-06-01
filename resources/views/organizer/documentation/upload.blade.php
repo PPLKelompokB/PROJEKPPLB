@@ -45,6 +45,7 @@
             {{-- Preview --}}
             <div class="mb-4">
                 <img id="preview" class="hidden max-h-48 rounded shadow" />
+                <p id="fileNameDoc" class="hidden text-sm text-gray-700 mt-2 font-medium"></p>
             </div>
 
             {{-- Note --}}
@@ -80,16 +81,21 @@
 document.querySelector('input[name="file"]').addEventListener('change', function(e) {
     const file = e.target.files[0];
     const preview = document.getElementById('preview');
+    const fileNameDoc = document.getElementById('fileNameDoc');
 
     if (file) {
         preview.src = URL.createObjectURL(file);
         preview.classList.remove('hidden');
+        
+        fileNameDoc.textContent = file.name;
+        fileNameDoc.classList.remove('hidden');
     }
 
     if (file && file.size > 2 * 1024 * 1024) {
         alert('File maksimal 2MB');
         e.target.value = '';
         preview.classList.add('hidden');
+        fileNameDoc.classList.add('hidden');
     }
 });
 </script>

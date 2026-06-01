@@ -21,6 +21,14 @@ class NotificationController extends Controller
         ]);
     }
 
+    public function markAllAsRead()
+    {
+        Notification::where('user_id', auth()->id())->update(['is_read' => true]);
+        return response()->json([
+            'message' => 'Semua notifikasi ditandai sebagai dibaca'
+        ]);
+    }
+
     public function markAsRead($id)
     {
         $notif = Notification::where('id', $id)

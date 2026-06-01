@@ -188,9 +188,14 @@
                         </span>
                     </button>
 
-                    <div id="notifDropdown" class="absolute right-0 mt-3 w-80 bg-white shadow-xl rounded-xl border z-50 hidden">
-                        <div class="p-4 border-b font-semibold text-sm">Notifications</div>
-                        <div id="notifList" class="max-h-80 overflow-y-auto">
+                    <div id="notifDropdown" class="absolute right-0 mt-3 w-96 bg-white shadow-xl border border-gray-100 z-50 hidden overflow-hidden">
+                        <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-white">
+                            <h3 class="font-bold text-[17px] text-[#2d3748]">Notifications</h3>
+                            <div class="flex items-center gap-3">
+                                <button type="button" onclick="markAllAsRead()" class="text-[15px] text-[#64748b] hover:text-[#334155]">Mark all read</button>
+                            </div>
+                        </div>
+                        <div id="notifList" class="max-h-[28rem] overflow-y-auto bg-white scrollbar-thin scrollbar-thumb-slate-200">
                             <div class="flex justify-center items-center py-8">
                                 <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

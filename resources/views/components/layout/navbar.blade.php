@@ -76,7 +76,7 @@
                         <div class="py-1">
                             <a href="{{ route('events.index') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-black transition-colors {{ request()->routeIs('events.index') ? 'bg-gray-50 text-black font-medium' : '' }}">Event List</a>
                             <a href="#" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-black transition-colors">Registered Events</a>
-                            <a href="#" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-black transition-colors">Event History</a>
+                            <a href="{{ route('events.history') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-black transition-colors">Event History</a>
                         </div>
                     </div>
                 </div>

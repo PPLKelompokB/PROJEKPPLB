@@ -294,4 +294,30 @@ class EventController extends Controller
             ->route('events.show', $event->id)
             ->with('success', $message);
     }
+    public function history(Request $request)
+    {
+        $query = \App\Models\EventRegistration::with(['event'])
+            ->where('user_id', auth()->id())
+            ->whereHas('event', function ($q) {
+                $q->where('event_date', '<', now());
+            });
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('event', function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('location', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('year') && $request->year !== 'all') {
+            $query->whereHas('event', function ($q) use ($request) {
+                $q->whereYear('event_date', $request->year);
+            });
+        }
+
+        $histories = $query->latest()->paginate(6)->withQueryString();
+
+        return view('events.history', compact('histories'));
+    }
 }

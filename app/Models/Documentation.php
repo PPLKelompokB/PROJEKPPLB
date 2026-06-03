@@ -14,6 +14,7 @@ class Documentation extends Model
         'event_id',
         'organizer_id',
         'file_path',
+        'note',
         'status' 
     ];
 

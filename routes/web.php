@@ -96,6 +96,15 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/documentation', [DocumentationController::class, 'index'])
             ->name('documentation.index');
+            
+        Route::get('/documentation/{documentation}/edit', [DocumentationController::class, 'edit'])
+            ->name('documentation.edit');
+            
+        Route::put('/documentation/{documentation}', [DocumentationController::class, 'update'])
+            ->name('documentation.update');
+
+        Route::delete('/documentation/{documentation}', [DocumentationController::class, 'destroy'])
+            ->name('documentation.destroy');
 
         /*
         |--------------------------------------------------------------------------

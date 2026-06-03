@@ -18,7 +18,7 @@ class DocumentationController extends Controller
         // ✅ Validasi sesuai PBI
         $request->validate([
             'event_id' => 'required|exists:events,id',
-            'file' => 'required|file|mimes:jpg,jpeg,png|max:2048',
+            'file' => 'required|file|mimes:jpg,jpeg,png|max:10240',
             'note' => 'nullable|string|max:255'
         ]);
 
@@ -26,9 +26,10 @@ class DocumentationController extends Controller
 
         // ✅ Authorization (biar tidak sembarang upload)
         if (auth()->id() !== $event->organizer_id) {
-            return response()->json([
-                'message' => 'Tidak diizinkan upload dokumentasi untuk event ini'
-            ], 403);
+            if ($request->wantsJson()) {
+                return response()->json(['message' => 'Tidak diizinkan upload dokumentasi untuk event ini'], 403);
+            }
+            return back()->withErrors('Tidak diizinkan upload dokumentasi untuk event ini');
         }
 
         // ✅ Upload file beneran
@@ -43,17 +44,79 @@ class DocumentationController extends Controller
             'status' => 'pending'
         ]);
 
-        return response()->json([
-            'message' => 'Dokumentasi berhasil diupload',
-            'data' => $documentation
-        ], 201);
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => 'Dokumentasi berhasil diupload',
+                'data' => $documentation
+            ], 201);
+        }
+
+        return back()->with('success', 'Documentation uploaded successfully.');
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(
-            Documentation::with('event')->latest()->get()
-        );
+        if ($request->wantsJson()) {
+            return response()->json(
+                Documentation::with('event')->latest()->get()
+            );
+        }
+
+        $events = Event::where('organizer_id', auth()->id())->get();
+        $documentations = Documentation::with('event')->where('organizer_id', auth()->id())->latest()->get();
+
+        return view('organizer.documentation.upload', compact('events', 'documentations'));
+    }
+
+    public function edit(Documentation $documentation)
+    {
+        if ($documentation->organizer_id != auth()->id()) {
+            abort(403);
+        }
+
+        return view('organizer.documentation.edit', compact('documentation'));
+    }
+
+    public function update(Request $request, Documentation $documentation)
+    {
+        if ($documentation->organizer_id != auth()->id()) {
+            abort(403);
+        }
+
+        $request->validate([
+            'file' => 'nullable|file|mimes:jpg,jpeg,png|max:10240',
+            'note' => 'nullable|string|max:255'
+        ]);
+
+        $data = [
+            'note' => $request->note
+        ];
+
+        if ($request->hasFile('file')) {
+            if (Storage::disk('public')->exists($documentation->file_path)) {
+                Storage::disk('public')->delete($documentation->file_path);
+            }
+            $data['file_path'] = $request->file('file')->store('documentations', 'public');
+        }
+
+        $documentation->update($data);
+
+        return redirect()->route('documentation.index', ['event_id' => $documentation->event_id])
+            ->with('success', 'Documentation updated successfully.');
+    }
+
+    public function destroy(Documentation $documentation)
+    {
+        if ($documentation->organizer_id != auth()->id()) {
+            abort(403);
+        }
+
+        if (Storage::disk('public')->exists($documentation->file_path)) {
+            Storage::disk('public')->delete($documentation->file_path);
+        }
+        $documentation->delete();
+
+        return back()->with('success', 'Documentation deleted successfully.');
     }
 
     public function verify($id, Request $request)

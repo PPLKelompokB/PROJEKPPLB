@@ -201,6 +201,8 @@ class EventController extends Controller
 
         return redirect()->route('events.show', $id)
             ->with('success', 'Berhasil mendaftar!');
+ 
+    }
 
     public function create()
     {
@@ -251,29 +253,5 @@ class EventController extends Controller
             ->with('success', 'Event berhasil dibuat!');
     }
 
-    public function register(Request $request, $id)
-    {
-        $event = Event::findOrFail($id);
-        
-        $alreadyRegistered = \App\Models\EventRegistration::where('event_id', $id)
-            ->where('user_id', auth()->id())
-            ->exists();
-            
-        if ($alreadyRegistered) {
-            return back()->with('error', 'You are already registered for this event.');
-        }
 
-        $totalVolunteers = $event->registrations()->count();
-        if ($totalVolunteers >= $event->quota) {
-            return back()->with('error', 'Sorry, the event is full.');
-        }
-
-        \App\Models\EventRegistration::create([
-            'event_id' => $event->id,
-            'user_id' => auth()->id(),
-            'status' => 'registered',
-        ]);
-
-        return back()->with('success', 'Successfully registered for the event!');
-    }
 }

@@ -24,6 +24,19 @@
         <form id="eventForm" action="{{ route('events.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
 
+            {{-- ❌ Validation Errors --}}
+            @if ($errors->any())
+                <div class="mb-6 bg-red-50 border border-red-200 rounded-lg px-5 py-4">
+                    <p class="text-sm font-semibold text-red-700 mb-2">Terdapat kesalahan pada form:</p>
+                    <ul class="list-disc list-inside space-y-1">
+                        @foreach ($errors->all() as $error)
+                            <li class="text-sm text-red-600">{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+
             {{-- IMAGE UPLOAD --}}
             <div class="mb-6">
                 <label class="block text-sm text-gray-700 mb-2">Event Image</label>

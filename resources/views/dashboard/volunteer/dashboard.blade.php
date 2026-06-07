@@ -168,9 +168,9 @@
                                 </div>
                                 <div class="flex items-center gap-4">
                                     <span class="text-[11px] font-semibold text-gray-600">+150 pts</span>
-                                    <button class="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-3 py-1.5 rounded-lg text-[10px] font-semibold transition">
+                                    <a href="{{ route('certificates.index') }}?search={{ urlencode($item->event->title) }}" class="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-3 py-1.5 rounded-lg text-[10px] font-semibold transition inline-block">
                                         Certificate
-                                    </button>
+                                    </a>
                                 </div>
                             </div>
                         @endif

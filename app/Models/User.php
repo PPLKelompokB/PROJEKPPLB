@@ -19,6 +19,11 @@ class User extends Authenticatable
         return $this->hasMany(Attendance::class);
     }
 
+    public function certificates()
+    {
+        return $this->hasMany(Certificate::class);
+    }
+
     public function isVolunteer()
     {
         return $this->role === 'volunteer';

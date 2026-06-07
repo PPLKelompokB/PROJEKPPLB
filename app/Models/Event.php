@@ -67,4 +67,23 @@ class Event extends Model
             return 'Finished';
         }
     }
+
+    public function getAdminStatusAttribute()
+    {
+        $docs = $this->documentations;
+        
+        if ($docs->isEmpty()) {
+            return 'to be verified';
+        }
+        
+        if ($docs->where('status', 'approved')->count() > 0) {
+            return 'approved';
+        }
+        
+        if ($docs->where('status', 'pending')->count() > 0) {
+            return 'to be verified';
+        }
+        
+        return 'rejected';
+    }
 }

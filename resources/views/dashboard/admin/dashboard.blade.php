@@ -68,18 +68,13 @@
             </div>
 
             <div class="flex items-center gap-3">
-                <div class="relative">
+                <form action="{{ route('admin.dashboard') }}" method="GET" class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </div>
-                    <input type="text" placeholder="Search events..."
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search events..."
                         class="border border-gray-200 rounded-lg pl-9 pr-4 py-2.5 text-sm w-64 focus:outline-none focus:ring-1 focus:ring-gray-300 transition">
-                </div>
-                <button class="border border-gray-200 rounded-lg p-2.5 text-gray-600 hover:bg-gray-50 transition">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                    </svg>
-                </button>
+                </form>
             </div>
         </div>
 
@@ -127,8 +122,8 @@
 
                             {{-- STATUS --}}
                             <td class="py-4 px-6">
-                                @if(strtolower($event->admin_status) == 'accepted' || strtolower($event->admin_status) == 'verified')
-                                    <span class="bg-black text-white px-3 py-1 rounded-full text-[11px] font-semibold tracking-wide capitalize">Accepted</span>
+                                @if(in_array(strtolower($event->admin_status), ['accepted', 'verified', 'approved']))
+                                    <span class="bg-black text-white px-3 py-1 rounded-full text-[11px] font-semibold tracking-wide capitalize">Approved</span>
                                 @elseif(strtolower($event->admin_status) == 'rejected')
                                     <span class="bg-gray-100 text-gray-500 border border-gray-200 px-3 py-1 rounded-full text-[11px] font-semibold tracking-wide capitalize">Rejected</span>
                                 @else
@@ -144,7 +139,7 @@
                                 </a>
 
                                 {{-- VERIFY / EDIT --}}
-                                <a href="/admin/events/{{ $event->id }}/verify" class="inline-block p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded transition" title="Verify Event">
+                                <a href="{{ route('admin.documentation.show', $event->id) }}" class="inline-block p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded transition" title="Verify Event">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                 </a>
                             </td>

@@ -8,7 +8,7 @@
         <p class="text-sm text-gray-500 font-medium">Total Events</p>
     </div>
     <div>
-        <h2 class="text-4xl font-semibold text-gray-800 mb-2">89</h2>
+        <h2 class="text-4xl font-semibold text-gray-800 mb-2">{{ $finishedEvents }}</h2>
         <p class="text-sm text-gray-500 font-medium">Beaches Cleaned</p>
     </div>
 </section>

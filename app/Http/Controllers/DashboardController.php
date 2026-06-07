@@ -88,7 +88,11 @@ class DashboardController extends Controller
     public function admin()
     {
         return view('dashboard.admin.dashboard', [
-            'events' => Event::latest()->paginate(10),
+            'events' => Event::with('documentations')
+                ->search(request('search'))
+                ->latest()
+                ->paginate(10)
+                ->withQueryString(),
             'totalUsers' => User::count(),
             'totalEvents' => Event::count(),
             'finishedEvents' => Event::where('event_date', '<', now())->count(),

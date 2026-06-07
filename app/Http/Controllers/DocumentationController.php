@@ -101,26 +101,24 @@ class DocumentationController extends Controller
 
         // 🔥 AUTOMATIC POINT AWARDING
         if ($request->status === 'approved') {
-            $registrations = EventRegistration::where('event_id', $event->id)->get();
-            $pointsEarned = $event->duration * 10;
+            // Cek apakah poin sudah pernah dibagikan untuk event ini
+            if (!Point::where('event_id', $event->id)->exists()) {
+                $registrations = EventRegistration::where('event_id', $event->id)->get();
+                $pointsEarned = $event->duration * 10;
 
-            foreach ($registrations as $registration) {
-                // Check if point has already been awarded to avoid duplicate
-                $existingPoint = Point::where('event_id', $event->id)
-                                      ->where('user_id', $registration->user_id)
-                                      ->first();
-                if (!$existingPoint) {
-                    Point::create([
-                        'user_id' => $registration->user_id,
-                        'event_id' => $event->id,
-                        'points' => $pointsEarned
-                    ]);
-
-                    $user = User::find($registration->user_id);
-                    if ($user) {
-                        $user->points += $pointsEarned;
-                        $user->save();
+                if ($registrations->isNotEmpty()) {
+                    $pointsData = [];
+                    foreach ($registrations as $registration) {
+                        $pointsData[] = [
+                            'user_id' => $registration->user_id,
+                            'event_id' => $event->id,
+                            'points' => $pointsEarned,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
                     }
+                    Point::insert($pointsData);
+                    User::whereIn('id', $registrations->pluck('user_id'))->increment('points', $pointsEarned);
                 }
             }
         }

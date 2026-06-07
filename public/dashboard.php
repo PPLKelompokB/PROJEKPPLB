@@ -26,7 +26,10 @@ $userRole = $_SESSION['role'] ?? 'Role tidak tersedia';
                 <h1>Dashboard OceanCare</h1>
                 <p>Halo, <?php echo htmlspecialchars($userName); ?> (<?php echo htmlspecialchars($userRole); ?>)</p>
             </div>
-            <a class="button" href="logout.php">Logout</a>
+            <div>
+                <a class="button" href="profile.php" style="margin-right:8px;">Profil</a>
+                <a class="button" href="logout.php">Logout</a>
+            </div>
         </div>
         <p>Halaman ini dilindungi dan hanya dapat diakses oleh pengguna yang sudah login.</p>
         <p>Jika logout berhasil, kembali ke <code>login.php</code> dan sesi akan dihentikan sepenuhnya.</p>

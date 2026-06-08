@@ -8,7 +8,7 @@
 <div class="relative">
     <div class="filter blur-sm pointer-events-none select-none h-screen overflow-hidden">
         <x-landing.hero />
-        <x-landing.stats :volunteers="$totalVolunteers" :events="$totalEvents" />
+        <x-landing.stats :volunteers="$totalVolunteers" :events="$totalEvents" :finished-events="$finishedEvents" />
         <x-landing.events-section :events="$events" />
         <x-landing.mission />
     </div>

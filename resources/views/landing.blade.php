@@ -9,6 +9,7 @@
 <x-landing.stats 
     :volunteers="$totalVolunteers" 
     :events="$totalEvents" 
+    :finished-events="$finishedEvents"
 />
 
 <x-landing.events-section :events="$events" />

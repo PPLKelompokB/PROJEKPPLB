@@ -14,10 +14,10 @@
                 Join as Volunteer
             </a>
         @else
-            <button onclick="openModal()"
+            <a href="{{ route('register') }}"
                 class="inline-block bg-[#9ca3af] hover:bg-gray-400 text-black px-8 py-3 rounded-md font-medium transition duration-200">
                 Join as Volunteer
-            </button>
+            </a>
         @endauth
     </div>
 </section>

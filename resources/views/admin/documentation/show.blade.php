@@ -181,7 +181,7 @@
         });
     }
 
-    function submitAll(status) {
+    async function submitAll(status) {
         const buttons = document.querySelectorAll('button[onclick*="openModal"]');
         const pendingIds = [];
         
@@ -201,31 +201,29 @@
             return;
         }
 
-        let completed = 0;
         let hasError = false;
 
-        pendingIds.forEach(id => {
-            fetch('/documentation/' + id + '/verify', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({ status: status })
-            }).then(response => {
+        for (const id of pendingIds) {
+            try {
+                const response = await fetch('/documentation/' + id + '/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ status: status })
+                });
+                
                 if(!response.ok) hasError = true;
-            }).catch(() => {
+            } catch (err) {
                 hasError = true;
-            }).finally(() => {
-                completed++;
-                if (completed === pendingIds.length) {
-                    if(hasError) {
-                        alert('Some documentations could not be updated.');
-                    }
-                    location.reload();
-                }
-            });
-        });
+            }
+        }
+        
+        if (hasError) {
+            alert('Some documentations could not be updated.');
+        }
+        location.reload();
     }
 </script>
 @endsection

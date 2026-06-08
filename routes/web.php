@@ -55,6 +55,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
     Route::post('/events', [EventController::class, 'store'])->name('events.store');
     Route::post('/events/{id}/register', [EventController::class, 'register'])->name('events.register');
+    Route::delete('/events/{id}', [EventController::class, 'destroy'])->name('events.destroy');
     
     Route::get('/dashboard', function () {
         return redirect()->route(match (auth()->user()->role) {
@@ -73,6 +74,13 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:volunteer')->group(function () {
         Route::get('/volunteer/dashboard', [DashboardController::class, 'volunteer'])
             ->name('volunteer.dashboard');
+            
+        Route::get('/volunteer/registered-events', [\App\Http\Controllers\RegisteredEventController::class, 'index'])
+            ->name('volunteer.registered-events');
+            
+        Route::get('/volunteer/registered-events/{id}', [\App\Http\Controllers\RegisteredEventController::class, 'show'])
+            ->where('id', '[0-9]+')
+            ->name('volunteer.registered-events.show');
     });
     Route::get('/history', [\App\Http\Controllers\EventController::class, 'history'])->name('events.history');
 

@@ -91,12 +91,18 @@ class EventController extends Controller
         ]);
     }
 
-    public function manage()
+    public function manage(Request $request)
     {
-        $events = Event::where('organizer_id', auth()->id())
-            ->withCount('registrations')
-            ->latest()
-            ->paginate(6);
+        $query = Event::where('organizer_id', auth()->id())
+            ->withCount('registrations');
+
+        // Search by title
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where('title', 'like', "%{$search}%");
+        }
+
+        $events = $query->latest()->paginate(6)->withQueryString();
 
         return view('events.manage', compact('events'));
     }
@@ -319,5 +325,23 @@ class EventController extends Controller
         $histories = $query->latest()->paginate(6)->withQueryString();
 
         return view('events.history', compact('histories'));
+    }
+
+    public function destroy($id)
+    {
+        $event = Event::findOrFail($id);
+
+        $user = auth()->user();
+        if ($user->role !== 'admin' && $event->organizer_id !== $user->id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if ($event->image) {
+            Storage::delete($event->image);
+        }
+
+        $event->delete();
+
+        return redirect()->back()->with('success', 'Event berhasil dihapus!');
     }
 }

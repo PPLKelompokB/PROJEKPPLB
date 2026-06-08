@@ -191,18 +191,20 @@
                 <h2 class="text-base font-semibold text-gray-900 mb-6">Profile Summary</h2>
                 
                 <div class="flex flex-col items-center">
-                    <img 
-                        src="{{ $user->photo ? asset($user->photo) : 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&color=7F9CF5&background=EBF4FF' }}"
-                        class="w-20 h-20 rounded-full border border-gray-200 shadow-sm"
-                        alt="{{ $user->name }}"
-                    >
+                    <a href="{{ route('profile.show') }}" class="flex flex-col items-center group">
+                        <img 
+                            src="{{ $user->photo ? asset($user->photo) : 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&color=7F9CF5&background=EBF4FF' }}"
+                            class="w-20 h-20 rounded-full border border-gray-200 shadow-sm group-hover:border-gray-400 transition"
+                            alt="{{ $user->name }}"
+                        >
 
-                    <h3 class="text-base font-semibold text-gray-900 mt-4">{{ $user->name }}</h3>
+                        <h3 class="text-base font-semibold text-gray-900 mt-4 group-hover:text-blue-600 transition">{{ $user->name }}</h3>
+                    </a>
                     <p class="text-[11px] font-medium text-gray-500 mt-1">Ocean Guardian &bull; Level 5</p>
                     
-                    <p class="text-xs text-gray-600 flex items-center gap-1.5 mt-2 font-medium">
+                    <p class="text-xs text-gray-600 flex items-center gap-1.5 mt-2 font-medium {{ !$user->location ? 'text-gray-400 italic' : '' }}">
                         <svg class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                        Los Angeles, CA
+                        {{ $user->location ?? 'Not specified' }}
                     </p>
 
                     <div class="w-full mt-6 space-y-4">
@@ -216,9 +218,9 @@
                         </div>
                     </div>
 
-                    <button class="w-full mt-6 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-4 py-2.5 rounded-lg text-xs font-semibold transition">
+                    <a href="{{ route('profile.edit') }}" class="w-full text-center mt-6 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-4 py-2.5 rounded-lg text-xs font-semibold transition block">
                         Edit Profile
-                    </button>
+                    </a>
                 </div>
             </div>
         </div>

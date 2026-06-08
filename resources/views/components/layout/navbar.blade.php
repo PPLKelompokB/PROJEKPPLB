@@ -203,12 +203,17 @@
 
             {{-- ========= PROFILE ========= --}}
             <div class="flex items-center gap-3 border-l pl-4 border-gray-200">
-                <img 
-                    src="{{ auth()->user()->photo ? asset(auth()->user()->photo) : 'https://ui-avatars.com/api/?name='.urlencode(auth()->user()->name).'&color=7F9CF5&background=EBF4FF' }}"
-                    class="w-8 h-8 rounded-full border border-gray-200 shadow-sm"
-                >
+                <a href="{{ route('profile.show') }}" class="group flex items-center gap-2 hover:opacity-90 transition">
+                    <img 
+                        src="{{ auth()->user()->photo ? asset(auth()->user()->photo) : 'https://ui-avatars.com/api/?name='.urlencode(auth()->user()->name).'&color=7F9CF5&background=EBF4FF' }}"
+                        class="w-8 h-8 rounded-full border border-gray-200 shadow-sm group-hover:border-gray-400 transition"
+                    >
+                    <span class="text-gray-600 text-sm hover:text-black transition font-medium">
+                        {{ explode(' ', auth()->user()->name)[0] }}
+                    </span>
+                </a>
 
-                <form action="{{ route('logout') }}" method="POST" class="inline">
+                <form action="{{ route('logout') }}" method="POST" class="inline border-l pl-3 border-gray-200 ml-1">
                     @csrf
                     <button type="submit" class="text-gray-500 text-sm hover:text-red-600 transition font-medium">
                         Logout

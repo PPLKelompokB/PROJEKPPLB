@@ -11,6 +11,7 @@ use App\Http\Controllers\DocumentationController;
 use App\Http\Controllers\AdminDocumentationController;
 use App\Http\Controllers\OrganizerDocumentationController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,6 +41,10 @@ Route::middleware('guest')->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
     Route::post('/events/{id}/register', [EventController::class, 'register'])
     ->name('events.register');
     

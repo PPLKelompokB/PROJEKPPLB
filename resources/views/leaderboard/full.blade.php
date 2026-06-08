@@ -6,7 +6,7 @@
     <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <div>
             <h1 class="text-3xl font-bold text-gray-900 mb-1">Full Volunteer Leaderboard</h1>
-            <p class="text-gray-500 text-sm">Daftar lengkap seluruh pahlawan lingkungan OceanCare.</p>
+            <p class="text-gray-500 text-sm">Meet All OceanCare Environmental Heroes.</p>
         </div>
         
         <div class="flex items-center space-x-3">
@@ -39,7 +39,6 @@
                         <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Volunteer</th>
                         <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Events</th>
                         <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Points</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -77,9 +76,6 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="text-sm font-bold text-gray-900">{{ number_format($volunteer->points) }} pts</span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500">
-                            {{ $volunteer->location ?? 'Indonesia' }}
                         </td>
                     </tr>
                     @endforeach

@@ -10,7 +10,7 @@ use App\Models\Point;
 use App\Models\User;
 use App\Models\EventRegistration;
 use Illuminate\Support\Facades\Storage;
-
+use Illuminate\Support\Str;
 class DocumentationController extends Controller
 {
     public function store(Request $request)
@@ -127,6 +127,12 @@ class DocumentationController extends Controller
 
         $documentation = Documentation::findOrFail($id);
 
+        if ($documentation->status !== 'pending') {
+            return response()->json([
+                'message' => 'Status dokumentasi sudah tidak bisa diubah karena sudah di' . $documentation->status . '.'
+            ], 400);
+        }
+
         $documentation->update([
             'status' => $request->status
         ]);
@@ -139,39 +145,43 @@ class DocumentationController extends Controller
             ], 404);
         }
 
-        // ✅ Notifikasi tetap dipakai (sudah bagus)
+        // ✅ Notifikasi dibedakan untuk dokumentasi yang berbeda (berdasarkan feedback)
+        $fileName = basename($documentation->file_path);
+        $docDetail = $documentation->note ? " (Note: '" . Str::limit($documentation->note, 30) . "')" : " (File: " . $fileName . ")";
+        
         Notification::create([
             'user_id' => $event->organizer_id,
-            'title' => 'Hasil Verifikasi Dokumentasi',
+            'title' => $request->status === 'approved' 
+                ? 'Documentation Approved: ' . Str::limit($event->title, 20) 
+                : 'Documentation Rejected: ' . Str::limit($event->title, 20),
             'message' => $request->status === 'approved'
-                ? 'Dokumentasi kegiatan Anda telah disetujui.'
-                : 'Dokumentasi ditolak, silakan upload ulang.',
+                ? 'Your event documentation for "' . $event->title . '"' . $docDetail . ' has been approved.'
+                : 'Your event documentation for "' . $event->title . '"' . $docDetail . ' has been rejected. Please review.',
             'type' => $request->status === 'approved' ? 'success' : 'error',
+            'action_url' => '/organizer/documentation/' . $event->id,
             'is_read' => false
         ]);
 
         // 🔥 AUTOMATIC POINT AWARDING
         if ($request->status === 'approved') {
-            $registrations = EventRegistration::where('event_id', $event->id)->get();
-            $pointsEarned = $event->duration * 10;
+            // Cek apakah poin sudah pernah dibagikan untuk event ini
+            if (!Point::where('event_id', $event->id)->exists()) {
+                $registrations = EventRegistration::where('event_id', $event->id)->get();
+                $pointsEarned = $event->duration * 10;
 
-            foreach ($registrations as $registration) {
-                // Check if point has already been awarded to avoid duplicate
-                $existingPoint = Point::where('event_id', $event->id)
-                                      ->where('user_id', $registration->user_id)
-                                      ->first();
-                if (!$existingPoint) {
-                    Point::create([
-                        'user_id' => $registration->user_id,
-                        'event_id' => $event->id,
-                        'points' => $pointsEarned
-                    ]);
-
-                    $user = User::find($registration->user_id);
-                    if ($user) {
-                        $user->points += $pointsEarned;
-                        $user->save();
+                if ($registrations->isNotEmpty()) {
+                    $pointsData = [];
+                    foreach ($registrations as $registration) {
+                        $pointsData[] = [
+                            'user_id' => $registration->user_id,
+                            'event_id' => $event->id,
+                            'points' => $pointsEarned,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
                     }
+                    Point::insert($pointsData);
+                    User::whereIn('id', $registrations->pluck('user_id'))->increment('points', $pointsEarned);
                 }
             }
         }

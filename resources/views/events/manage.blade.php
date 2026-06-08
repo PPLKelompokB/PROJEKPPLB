@@ -26,7 +26,12 @@
 
                 <!-- Content -->
                 <div class="p-6 flex flex-col flex-grow">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-4">{{ $event->title }}</h2>
+                    <div class="flex items-start justify-between mb-4">
+                        <h2 class="text-lg font-semibold text-gray-900">{{ $event->title }}</h2>
+                        @if($event->status === 'draft')
+                            <span class="inline-flex items-center px-2 py-1 rounded text-[10px] font-medium bg-gray-100 text-gray-600 border border-gray-200">Draft</span>
+                        @endif
+                    </div>
 
                     <div class="space-y-2 mb-6 flex-grow">
                         <!-- Location -->

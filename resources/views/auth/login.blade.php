@@ -8,7 +8,7 @@
 <div class="relative">
     <div class="filter blur-sm pointer-events-none select-none h-screen overflow-hidden">
         <x-landing.hero />
-        <x-landing.stats :volunteers="$totalVolunteers" :events="$totalEvents" />
+        <x-landing.stats :volunteers="$totalVolunteers" :events="$totalEvents" :finished-events="$finishedEvents" />
         <x-landing.events-section :events="$events" />
         <x-landing.mission />
     </div>
@@ -21,10 +21,10 @@
             
             <!-- Logo Section -->
             <div class="flex flex-col items-center mb-6">
-                <svg class="w-10 h-10 text-gray-800" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="none" stroke="currentColor" stroke-width="2"/>
-                    <path d="M6 10c1.5 0 2-1 3.5-1s2 1 3.5 1 2-1 3.5-1 2 1 3.5 1" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
-                    <path d="M8 14c1.5 0 2-1 3.5-1s2 1 3.5 1" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+                <svg class="w-10 h-10 text-gray-800" viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M 50 25 C 40 5, 10 5, 10 35 C 10 55, 35 75, 50 90 C 65 75, 90 55, 90 35 C 90 5, 60 5, 50 25 Z" fill="none" stroke="currentColor" stroke-width="10" stroke-linejoin="round"/>
+                    <path d="M 13 48 C 25 35, 40 35, 50 48 C 60 61, 75 61, 87 48" fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
+                    <path d="M 23 68 C 32 58, 42 58, 50 68 C 58 78, 68 78, 77 68" fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
                 </svg>
                 <h2 class="text-lg font-bold text-gray-800 tracking-tight mt-1">OceanCare</h2>
             </div>
@@ -71,17 +71,6 @@
                         </div>
                         <input type="password" name="password" placeholder="Enter your password" class="w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-gray-300 focus:border-gray-300 transition-colors" required>
                     </div>
-                </div>
-
-                <!-- Remember Me & Forgot Password -->
-                <div class="flex items-center justify-between mt-2 mb-4">
-                    <label class="flex items-center cursor-pointer">
-                        <input type="checkbox" name="remember" class="w-3.5 h-3.5 border-gray-300 rounded text-black focus:ring-black">
-                        <span class="ml-2 text-[11px] text-gray-600 font-medium">Remember me</span>
-                    </label>
-                    <a href="#" class="text-[11px] font-bold text-gray-800 hover:underline">
-                        Forgot password?
-                    </a>
                 </div>
 
                 <div class="pt-2">

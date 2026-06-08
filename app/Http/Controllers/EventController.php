@@ -9,9 +9,48 @@ use App\Models\EventRegistration;
 
 class EventController extends Controller
 {   
-    public function index()
+    public function index(Request $request)
     {
-        $events = Event::with('organizer')->withCount('registrations')->latest()->paginate(6);
+        $query = Event::with('organizer')->withCount('registrations')->where('status', 'published');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('location', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('location')) {
+            $query->where('location', 'like', '%' . $request->location . '%');
+        }
+
+        if ($request->filled('date')) {
+            if ($request->date === 'today') {
+                $query->whereDate('event_date', \Carbon\Carbon::today());
+            } elseif ($request->date === 'this_week') {
+                $query->whereBetween('event_date', [
+                    \Carbon\Carbon::now()->startOfWeek(),
+                    \Carbon\Carbon::now()->endOfWeek()
+                ]);
+            } elseif ($request->date === 'this_month') {
+                $query->whereMonth('event_date', \Carbon\Carbon::now()->month)
+                      ->whereYear('event_date', \Carbon\Carbon::now()->year);
+            }
+        }
+
+        if ($request->filled('sort')) {
+            if ($request->sort === 'latest') {
+                $query->latest('event_date');
+            } else {
+                $query->oldest('event_date');
+            }
+        } else {
+            $query->oldest('event_date');
+        }
+
+        $events = $query->paginate(6)->withQueryString();
 
         return view('events.index', compact('events'));
     }
@@ -23,6 +62,10 @@ class EventController extends Controller
 
         if (!$event) {
             return redirect('/')->with('error', 'Event tidak ditemukan');
+        }
+
+        if ($event->status === 'draft' && (!auth()->check() || auth()->id() !== $event->organizer_id)) {
+            abort(403, 'Unauthorized action.');
         }
 
         $user = auth()->user();
@@ -48,12 +91,18 @@ class EventController extends Controller
         ]);
     }
 
-    public function manage()
+    public function manage(Request $request)
     {
-        $events = Event::where('organizer_id', auth()->id())
-            ->withCount('registrations')
-            ->latest()
-            ->paginate(6);
+        $query = Event::where('organizer_id', auth()->id())
+            ->withCount('registrations');
+
+        // Search by title
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where('title', 'like', "%{$search}%");
+        }
+
+        $events = $query->latest()->paginate(6)->withQueryString();
 
         return view('events.manage', compact('events'));
     }
@@ -145,7 +194,6 @@ class EventController extends Controller
 
         if ($request->hasFile('image')) {
 
-            // hapus lama (optional)
             if ($event->image) {
                 Storage::delete($event->image);
             }
@@ -155,15 +203,20 @@ class EventController extends Controller
         }
 
         $data['contact_phone'] = $data['phone'] ?? null;
+        
+        $data['status'] = $request->input('action') === 'draft' ? 'draft' : 'published';
 
         unset($data['date'], $data['time'], $data['phone']);
 
         $event->update($data);
 
+        $message = $data['status'] === 'draft' ? 'Event berhasil disimpan sebagai draft' : 'Event berhasil diupdate';
+
         return redirect()
             ->route('events.detail', $event->id)
-            ->with('success', 'Event berhasil diupdate');
+            ->with('success', $message);
     }
+
     public function register($id)
     {
         $user = auth()->user();
@@ -174,7 +227,6 @@ class EventController extends Controller
 
         $event = Event::findOrFail($id);
 
-        // cek apakah sudah daftar
         $alreadyRegistered = EventRegistration::where('user_id', $user->id)
             ->where('event_id', $id)
             ->where('status', 'registered')
@@ -184,7 +236,6 @@ class EventController extends Controller
             return back()->with('error', 'Kamu sudah terdaftar di event ini');
         }
 
-        // cek quota penuh
         if ($event->registrations()->count() >= $event->quota) {
             return back()->with('error', 'Kuota event sudah penuh');
         }
@@ -201,7 +252,6 @@ class EventController extends Controller
 
         return redirect()->route('events.show', $id)
             ->with('success', 'Berhasil mendaftar!');
- 
     }
 
     public function create()
@@ -228,29 +278,53 @@ class EventController extends Controller
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
         ]);
 
-        // gabung date + time
         $data['event_date'] = $data['date'] . ' ' . $data['time'];
 
-        // upload image
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('events', 'public');
         }
 
-        // set organizer
         $data['organizer_id'] = auth()->id();
 
-        // mapping phone
         $data['contact_phone'] = $data['phone'] ?? null;
 
-        // hapus field sementara
+        $data['status'] = $request->input('action') === 'draft' ? 'draft' : 'published';
+
         unset($data['date'], $data['time'], $data['phone']);
 
-        // simpan
         $event = Event::create($data);
+
+        $message = $data['status'] === 'draft' ? 'Event berhasil disimpan sebagai draft!' : 'Event berhasil dibuat!';
 
         return redirect()
             ->route('events.show', $event->id)
-            ->with('success', 'Event berhasil dibuat!');
+            ->with('success', $message);
+    }
+    public function history(Request $request)
+    {
+        $query = \App\Models\EventRegistration::with(['event'])
+            ->where('user_id', auth()->id())
+            ->whereHas('event', function ($q) {
+                $q->where('event_date', '<', now());
+            });
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('event', function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('location', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('year') && $request->year !== 'all') {
+            $query->whereHas('event', function ($q) use ($request) {
+                $q->whereYear('event_date', $request->year);
+            });
+        }
+
+        $histories = $query->latest()->paginate(6)->withQueryString();
+
+        return view('events.history', compact('histories'));
     }
 
 

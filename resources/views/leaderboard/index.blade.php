@@ -51,13 +51,14 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                {{ \App\Models\Attendance::where('user_id', $volunteer->id)->count() }} events
+                                {{ $volunteer->attendances_count ?? 0 }} events
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="text-sm font-bold text-gray-900">{{ number_format($volunteer->points) }} pts</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500">
-                                {{ $volunteer->location ?? '' }} &bull; {{ rand(1, 5) }} days ago
+                                {{ $volunteer->location ?? '' }} &bull; 
+                                {{ $volunteer->attendances_max_created_at ? \Carbon\Carbon::parse($volunteer->attendances_max_created_at)->diffForHumans() : 'No activity yet' }}
                             </td>
                         </tr>
                         @endforeach
@@ -78,7 +79,11 @@
                     @if(Auth::user()->role === 'volunteer')
                         <div class="text-center mb-6">
                             <div class="text-5xl font-extrabold text-black mb-1">#{{ $userRank ?? '-' }}</div>
-                            <p class="text-sm text-gray-500">You're in the top 12%!</p>
+                            @if(isset($topPercentage))
+                                <p class="text-sm text-gray-500">You're in the top {{ $topPercentage }}%!</p>
+                            @else
+                                <p class="text-sm text-gray-500">Keep participating to rank up!</p>
+                            @endif
                         </div>
                         <div class="space-y-3 pt-4 border-t border-gray-100">
                         <div class="flex justify-between items-center text-sm">
@@ -118,7 +123,6 @@
                             <p class="text-xs text-gray-500 mt-0.5">{{ Auth::check() ? \App\Models\Attendance::where('user_id', Auth::id())->count() : 0 }} cleans completed</p>
                         </div>
                     </div>
-
 
                 </div>
             </div>

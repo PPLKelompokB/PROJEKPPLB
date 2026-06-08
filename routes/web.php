@@ -74,6 +74,15 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:volunteer')->group(function () {
         Route::get('/volunteer/dashboard', [DashboardController::class, 'volunteer'])
             ->name('volunteer.dashboard');
+
+        Route::get('/certificates', [App\Http\Controllers\CertificateController::class, 'index'])
+            ->name('certificates.index');
+        Route::post('/certificates/{eventId}/generate', [App\Http\Controllers\CertificateController::class, 'generate'])
+            ->name('certificates.generate');
+        Route::get('/certificates/{id}/download', [App\Http\Controllers\CertificateController::class, 'download'])
+            ->name('certificates.download');
+        Route::get('/certificates/{id}/preview', [App\Http\Controllers\CertificateController::class, 'preview'])
+            ->name('certificates.preview');
             
         Route::get('/volunteer/registered-events', [\App\Http\Controllers\RegisteredEventController::class, 'index'])
             ->name('volunteer.registered-events');
@@ -118,6 +127,15 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/documentation', [DocumentationController::class, 'index'])
             ->name('documentation.index');
+            
+        Route::get('/documentation/{documentation}/edit', [DocumentationController::class, 'edit'])
+            ->name('documentation.edit');
+            
+        Route::put('/documentation/{documentation}', [DocumentationController::class, 'update'])
+            ->name('documentation.update');
+
+        Route::delete('/documentation/{documentation}', [DocumentationController::class, 'destroy'])
+            ->name('documentation.destroy');
 
         /*
         |--------------------------------------------------------------------------

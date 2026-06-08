@@ -32,6 +32,11 @@ class Event extends Model
     {
         return $this->hasMany(Attendance::class);
     }
+
+    public function certificates()
+    {
+        return $this->hasMany(Certificate::class);
+    }
     
     public function scopeSearch(Builder $query, ?string $keyword): Builder
     {

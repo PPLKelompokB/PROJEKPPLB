@@ -327,21 +327,5 @@ class EventController extends Controller
         return view('events.history', compact('histories'));
     }
 
-    public function destroy($id)
-    {
-        $event = Event::findOrFail($id);
 
-        $user = auth()->user();
-        if ($user->role !== 'admin' && $event->organizer_id !== $user->id) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        if ($event->image) {
-            Storage::delete($event->image);
-        }
-
-        $event->delete();
-
-        return redirect()->back()->with('success', 'Event berhasil dihapus!');
-    }
 }

@@ -38,6 +38,7 @@ class NotificationTest extends DuskTestCase
             $browser->loginAs($organizer)
                     ->visit('/dashboard') // Sesuaikan dengan route dashboard organizer
                     // Memastikan ada indikator angka/badge pada icon lonceng
+                    ->pause(1500)
                     ->waitFor('#notifBadge')
                     ->assertSeeIn('#notifBadge', '1') // Jumlah notif 1
                     
@@ -71,18 +72,19 @@ class NotificationTest extends DuskTestCase
         $this->browse(function (Browser $browser) use ($organizer, $notification) {
             $browser->loginAs($organizer)
                     ->visit('/dashboard')
-                    ->waitFor('#notifWrapper button')
+                    ->pause(1500) // Wait for fetch
                     ->click('#notifWrapper button')
                     ->waitFor('#notifDropdown')
                     ->assertSee('Documentation Rejected')
                     
                     // Asumsikan menekan notifikasi akan men-trigger mark as read (via JS/Ajax)
                     ->click('#notifList > div') // Selector item notifikasi
-                    ->pause(1000) // Tunggu request AJAX selesai
+                    ->pause(1500) // Tunggu request AJAX selesai
                     
                     // Refresh halaman atau cek UI (tergantung implementasi)
                     ->refresh()
-                    ->assertMissing('#notifBadge'); // Badge hilang karena is_read = true
+                    ->pause(1500)
+                    ->assertPresent('#notifBadge.hidden'); // Badge hilang karena is_read = true
                     
             // Verifikasi di database
             $this->assertDatabaseHas('notifications', [
@@ -113,7 +115,8 @@ class NotificationTest extends DuskTestCase
             // Organizer B tidak boleh melihat notifikasi Organizer A
             $browser->loginAs($organizerB)
                     ->visit('/dashboard')
-                    ->assertMissing('#notifBadge')
+                    ->pause(1000)
+                    ->assertPresent('#notifBadge.hidden')
                     ->click('#notifWrapper button')
                     ->pause(500)
                     ->assertDontSee('Event A Approved');
@@ -121,7 +124,7 @@ class NotificationTest extends DuskTestCase
             // Organizer A harusnya bisa melihat
             $browser->loginAs($organizerA)
                     ->visit('/dashboard')
-                    ->waitFor('#notifBadge')
+                    ->pause(1500)
                     ->assertSeeIn('#notifBadge', '1');
         });
     }

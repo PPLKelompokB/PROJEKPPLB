@@ -303,6 +303,9 @@ class CreateEventTest extends DuskTestCase
             // Isi semua kolom wajib dengan data valid
             $this->fillValidForm($browser, 'Event dengan File Tidak Valid');
 
+            // Pause to let DOM settle before interacting with file input
+            $browser->pause(800);
+
             // Lampirkan file PDF ke input image
             $browser->attach('image', $fakePdfPath);
 

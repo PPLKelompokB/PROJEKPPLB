@@ -25,6 +25,12 @@
 
     {{-- CONTENT --}}
     <main>
+        @if(session('error'))
+            <div id="globalError" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-red-50 border border-red-200 text-red-800 rounded-xl px-5 py-3 text-sm font-medium shadow-sm">
+                <span>{{ session('error') }}</span>
+                <button onclick="document.getElementById('globalError').remove()" class="ml-2 text-red-400 hover:text-red-600">✕</button>
+            </div>
+        @endif
         @yield('content')
     </main>
 

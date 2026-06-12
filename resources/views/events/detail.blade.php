@@ -52,7 +52,19 @@
                         </div>
                         <h1 class="text-[28px] font-semibold text-gray-900 leading-tight">{{ $event->title }}</h1>
                     </div>
-                    
+
+                    @auth
+                        @if(auth()->id() === $event->organizer_id)
+                        <div class="flex gap-2 shrink-0">
+                            <a href="{{ route('events.edit', $event->id) }}" class="border border-gray-200 text-gray-700 hover:bg-gray-50 px-3 py-1.5 rounded-lg text-xs font-medium transition">Edit Event</a>
+                            <form action="{{ route('events.destroy', $event->id) }}" method="POST" onsubmit="return confirm('Yakin hapus event ini?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded-lg text-xs font-medium transition">Hapus Event</button>
+                            </form>
+                        </div>
+                        @endif
+                    @endauth
                 </div>
 
                 <div class="flex flex-wrap gap-6 text-sm text-gray-600">
@@ -137,7 +149,7 @@
         <div class="lg:col-span-1">
             
             {{-- REGISTRATION CARD --}}
-            @if((!auth()->check() || auth()->user()->role === 'volunteer') && !\Carbon\Carbon::parse($event->event_date)->isPast())
+            @if((!auth()->check() || auth()->user()->role === 'volunteer') && !\Carbon\Carbon::parse($event->event_date)->addHours($event->duration)->isPast())
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
                 <div class="text-center mb-6">
                     <h2 class="text-2xl font-semibold text-gray-900">Free</h2>

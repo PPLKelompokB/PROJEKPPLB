@@ -9,6 +9,7 @@ use App\Models\Notification;
 use App\Models\Point;
 use App\Models\User;
 use App\Models\EventRegistration;
+use App\Models\Attendance;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 class DocumentationController extends Controller
@@ -166,14 +167,16 @@ class DocumentationController extends Controller
         if ($request->status === 'approved') {
             // Cek apakah poin sudah pernah dibagikan untuk event ini
             if (!Point::where('event_id', $event->id)->exists()) {
-                $registrations = EventRegistration::where('event_id', $event->id)->get();
+                $attendances = \App\Models\Attendance::where('event_id', $event->id)
+                    ->where('status', 'present')
+                    ->get();
                 $pointsEarned = $event->duration * 10;
 
-                if ($registrations->isNotEmpty()) {
+                if ($attendances->isNotEmpty()) {
                     $pointsData = [];
-                    foreach ($registrations as $registration) {
+                    foreach ($attendances as $attendance) {
                         $pointsData[] = [
-                            'user_id' => $registration->user_id,
+                            'user_id' => $attendance->user_id,
                             'event_id' => $event->id,
                             'points' => $pointsEarned,
                             'created_at' => now(),
@@ -181,7 +184,7 @@ class DocumentationController extends Controller
                         ];
                     }
                     Point::insert($pointsData);
-                    User::whereIn('id', $registrations->pluck('user_id'))->increment('points', $pointsEarned);
+                    User::whereIn('id', $attendances->pluck('user_id'))->increment('points', $pointsEarned);
                 }
             }
         }

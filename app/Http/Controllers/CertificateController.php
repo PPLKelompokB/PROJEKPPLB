@@ -28,6 +28,12 @@ class CertificateController extends Controller
         $query = Attendance::where('user_id', $user->id)
             ->where('status', 'present')
             ->whereHas('event', function ($q) use ($search, $year, $location) {
+                $q->whereRaw('DATE_ADD(event_date, INTERVAL duration HOUR) < ?', [now()]);
+                
+                $q->whereHas('documentations', function($docQ) {
+                    $docQ->where('status', 'approved');
+                });
+
                 if ($search) {
                     $q->where('title', 'like', "%{$search}%");
                 }
@@ -93,11 +99,14 @@ class CertificateController extends Controller
             ->where('event_id', $event->id)
             ->where('status', 'present')
             ->exists();
+            
+        $isFinished = \Carbon\Carbon::parse($event->event_date)->addHours($event->duration) < now();
+        $isApproved = $event->documentations()->where('status', 'approved')->exists();
 
-        if (!$hasAttended) {
+        if (!$hasAttended || !$isFinished || !$isApproved) {
             return response()->json([
                 'success' => false,
-                'message' => 'Anda tidak memenuhi syarat untuk mendapatkan sertifikat karena belum menghadiri kegiatan ini.'
+                'message' => 'Anda tidak memenuhi syarat untuk mendapatkan sertifikat. Pastikan event sudah selesai, dokumentasi telah disetujui, dan Anda hadir.'
             ], 403);
         }
 

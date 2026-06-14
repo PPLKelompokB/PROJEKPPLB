@@ -20,6 +20,7 @@ class DashboardController extends Controller
 
         $registrations = EventRegistration::with('event')
             ->where('user_id', $user->id)
+            ->where('status', 'registered')
             ->get();
 
         $upcomingEvents = $registrations->filter(fn($r) =>
@@ -78,7 +79,9 @@ class DashboardController extends Controller
         return view('dashboard.organizer.dashboard', [
             'events' => $events,
             'totalEvents' => $allEvents->count(),
-            'totalVolunteers' => EventRegistration::whereIn('event_id', $allEvents->pluck('id'))->count(),
+            'totalVolunteers' => EventRegistration::whereIn('event_id', $allEvents->pluck('id'))
+                ->where('status', 'registered')
+                ->count(),
             'activeEvents' => $allEvents->filter(function($e) {
                 $start = \Carbon\Carbon::parse($e->event_date);
                 $end = $start->copy()->addHours($e->duration);

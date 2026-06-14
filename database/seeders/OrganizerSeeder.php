@@ -10,7 +10,7 @@ class OrganizerSeeder extends Seeder
 {
     public function run(): void
     {
-        User::firstOrCreate(
+        User::updateOrCreate(
             ['email' => 'organizer@oceancare.com'],
             [
                 'name' => 'Organizer 1',

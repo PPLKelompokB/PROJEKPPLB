@@ -16,13 +16,14 @@ class RegisteredEventController extends Controller
         $userId = auth()->id();
 
         $query = EventRegistration::with('event.organizer')
-            ->where('user_id', $userId)
-            ->whereHas('event');
+            ->join('events', 'event_registrations.event_id', '=', 'events.id')
+            ->where('event_registrations.user_id', $userId)
+            ->select('event_registrations.*');
 
         // Search by event title
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->whereHas('event', fn($q) => $q->where('title', 'like', "%{$search}%"));
+            $query->where('events.title', 'like', "%{$search}%");
         }
 
         // Filter by status
@@ -31,16 +32,16 @@ class RegisteredEventController extends Controller
             $status = $request->status;
 
             if ($status === 'cancelled') {
-                $query->where('status', 'cancelled');
+                $query->where('event_registrations.status', 'canceled');
             } elseif ($status === 'completed') {
-                $query->where('status', '!=', 'cancelled')
-                      ->whereHas('event', fn($q) => $q->where('event_date', '<', $now));
+                $query->where('event_registrations.status', '!=', 'canceled')
+                      ->where('events.event_date', '<', $now);
             } elseif ($status === 'upcoming') {
-                $query->where('status', '!=', 'cancelled')
-                      ->whereHas('event', fn($q) => $q->where('event_date', '>=', $now));
+                $query->where('event_registrations.status', '!=', 'canceled')
+                      ->where('events.event_date', '>=', $now);
             } elseif ($status === 'registered') {
-                $query->where('status', 'registered')
-                      ->whereHas('event', fn($q) => $q->where('event_date', '>=', $now));
+                $query->where('event_registrations.status', 'registered')
+                      ->where('events.event_date', '>=', $now);
             }
         }
 
@@ -48,9 +49,7 @@ class RegisteredEventController extends Controller
         $direction = $request->input('date', 'asc') === 'desc' ? 'desc' : 'asc';
 
         $registrations = $query
-            ->join('events', 'event_registrations.event_id', '=', 'events.id')
             ->orderBy('events.event_date', $direction)
-            ->select('event_registrations.*')
             ->paginate(10)
             ->withQueryString();
 
@@ -76,5 +75,25 @@ class RegisteredEventController extends Controller
         }
 
         return view('volunteer.registered-events.show', compact('registration'));
+    }
+
+    /**
+     * Cancel the registration.
+     */
+    public function cancel($id)
+    {
+        $userId = auth()->id();
+
+        $registration = EventRegistration::where('user_id', $userId)
+            ->where('event_id', $id)
+            ->first();
+
+        if (!$registration) {
+            return back()->with('error', 'Registration not found.');
+        }
+
+        $registration->update(['status' => 'canceled']);
+
+        return back()->with('success', 'Berhasil membatalkan pendaftaran event.');
     }
 }

@@ -54,7 +54,7 @@
 
             {{-- EVENT NAME --}}
             <div class="mb-5">
-                <label class="block text-sm text-gray-700 mb-1.5">Event Name</label>
+                <label class="block text-sm text-gray-700 mb-1.5">Event Name <span class="text-gray-500">*</span></label>
                 <input type="text" name="title"
                     value="{{ $event->title }}"
                     placeholder="Enter event name"
@@ -63,7 +63,7 @@
 
             {{-- LOCATION --}}
             <div class="mb-5 relative">
-                <label class="block text-sm text-gray-700 mb-1.5">Beach Location</label>
+                <label class="block text-sm text-gray-700 mb-1.5">Beach Location <span class="text-gray-500">*</span></label>
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                         <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -81,7 +81,7 @@
             {{-- DATE + TIME --}}
             <div class="grid grid-cols-2 gap-5 mb-5">
                 <div>
-                    <label class="block text-sm text-gray-700 mb-1.5">Event Date</label>
+                    <label class="block text-sm text-gray-700 mb-1.5">Event Date <span class="text-gray-500">*</span></label>
                     <input type="date" name="date"
                         value="{{ \Carbon\Carbon::parse($event->event_date)->format('Y-m-d') }}"
                         class="w-full border border-gray-300 rounded-md px-4 py-2.5 text-sm focus:ring-1 focus:ring-black focus:border-black outline-none text-gray-700 transition">
@@ -120,7 +120,7 @@
 
             {{-- DESCRIPTION --}}
             <div class="mb-5">
-                <label class="block text-sm text-gray-700 mb-1.5">Event Description</label>
+                <label class="block text-sm text-gray-700 mb-1.5">Event Description <span class="text-gray-500">*</span></label>
                 <textarea name="description" rows="5"
                     placeholder="Describe the event, what volunteers can expect, what to bring, meeting point details, etc."
                     class="w-full border border-gray-300 rounded-md px-4 py-2.5 text-sm focus:ring-1 focus:ring-black focus:border-black outline-none placeholder-gray-400 transition resize-y">{{ $event->description }}</textarea>
@@ -149,7 +149,7 @@
 
                 <div class="grid grid-cols-2 gap-5">
                     <div>
-                        <label class="block text-sm text-gray-700 mb-1.5">Contact Person</label>
+                        <label class="block text-sm text-gray-700 mb-1.5">Contact Person <span class="text-gray-500">*</span></label>
                         <input type="text" name="contact_person"
                             value="John Doe"
                             placeholder="Full name"
@@ -157,7 +157,7 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm text-gray-700 mb-1.5">Phone Number</label>
+                        <label class="block text-sm text-gray-700 mb-1.5">Phone Number <span class="text-gray-500">*</span></label>
                         <input type="text" name="phone"
                             value="+62 888 9898 9898"
                             placeholder="Phone number"

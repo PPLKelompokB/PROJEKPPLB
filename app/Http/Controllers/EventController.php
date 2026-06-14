@@ -95,7 +95,9 @@ class EventController extends Controller
     public function manage(Request $request)
     {
         $query = Event::where('organizer_id', auth()->id())
-            ->withCount('registrations');
+            ->withCount(['registrations' => function ($query) {
+                $query->where('status', 'registered');
+            }]);
 
         // Search by title
         if ($request->filled('search')) {
@@ -115,7 +117,7 @@ class EventController extends Controller
             ->findOrFail($id);
 
         $user = auth()->user();
-        $totalVolunteers = $event->registrations->count();
+        $totalVolunteers = $event->registrations->where('status', 'registered')->count();
         
         $isRegistered = false;
         if ($user) {
@@ -147,6 +149,7 @@ class EventController extends Controller
         }
 
         $participants = $event->registrations()
+            ->where('status', 'registered')
             ->with('user')
             ->latest()
             ->paginate(5);
@@ -237,13 +240,17 @@ class EventController extends Controller
             return back()->with('error', 'Kamu sudah terdaftar di event ini');
         }
 
-        if ($event->registrations()->count() >= $event->quota) {
+        if ($event->registrations()->where('status', 'registered')->count() >= $event->quota) {
             return back()->with('error', 'Kuota event sudah penuh');
         }
 
         if (\Carbon\Carbon::parse($event->event_date)->addHours($event->duration) < now()) {
             return back()->with('error', 'Event sudah selesai');
         }
+
+        EventRegistration::where('user_id', $user->id)
+            ->where('event_id', $id)
+            ->delete();
 
         EventRegistration::create([
             'user_id' => $user->id,

@@ -5,6 +5,20 @@
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
+    @if(session('success'))
+        <div id="flashSuccess" class="w-full flex items-center gap-3 bg-green-50 border border-green-200 text-green-800 rounded-xl px-5 py-3 text-sm font-medium shadow-sm mb-6">
+            <svg class="w-5 h-5 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span>{{ session('success') }}</span>
+            <button type="button" onclick="document.getElementById('flashSuccess').remove()" class="ml-auto text-green-500 hover:text-green-700 transition">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+    @endif
+
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
         <div>
@@ -16,7 +30,13 @@
         <form id="filter-form" action="{{ route('volunteer.registered-events') }}" method="GET" class="flex gap-3 flex-wrap">
             <div class="relative">
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Search event..."
+                    onkeydown="if(event.key === 'Enter') { event.preventDefault(); this.form.submit(); }"
                     class="appearance-none border border-gray-300 rounded-lg py-2 pl-3 pr-8 text-sm text-gray-700 bg-white focus:outline-none focus:border-gray-500">
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </div>
             </div>
             
             <div class="relative">
@@ -77,7 +97,7 @@
                     $event      = $reg->event;
                     $isPast     = \Carbon\Carbon::parse($event->event_date)->isPast();
 
-                    if ($reg->status === 'cancelled') {
+                    if ($reg->status === 'canceled') {
                         $statusText  = 'Cancelled';
                         $statusClass = 'bg-white/90 text-gray-700';
                     } elseif ($isPast) {
@@ -171,10 +191,14 @@
                                    class="flex-1 py-2 px-4 rounded-lg text-sm font-semibold text-white bg-black hover:bg-gray-800 transition-colors text-center">
                                     View Details
                                 </a>
-                                <button
-                                    class="py-2 px-3 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 bg-white hover:bg-gray-50 transition-colors">
-                                    Cancel
-                                </button>
+                                <form action="{{ route('volunteer.registered-events.cancel', $event->id) }}" method="POST" onsubmit="return confirm('Apakah kamu yakin ingin membatalkan pendaftaran event ini?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit"
+                                        class="py-2 px-3 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 bg-white hover:bg-gray-50 transition-colors">
+                                        Cancel
+                                    </button>
+                                </form>
                             @endif
                         </div>
                     </div>

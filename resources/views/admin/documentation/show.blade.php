@@ -135,7 +135,8 @@
     function openModal(status, id = null) {
         currentStatus = status;
         currentDocId = id;
-        document.getElementById('modalTitle').innerText = 'Are you sure you want to ' + status + ' ' + (id ? 'this' : 'these') + ' documentation' + (id ? '?' : 's?');
+        const actionWord = status === 'approved' ? 'approve' : 'reject';
+        document.getElementById('modalTitle').innerText = 'Are you sure you want to ' + actionWord + ' ' + (id ? 'this' : 'these') + ' documentation' + (id ? '?' : 's?');
         document.getElementById('confirmModalBtn').innerText = status === 'approved' ? 'Approve!' : 'Reject!';
         document.getElementById('confirmModal').classList.remove('hidden');
     }
@@ -162,6 +163,7 @@
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
             body: JSON.stringify({ status: status })
@@ -209,6 +211,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json',
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
                     body: JSON.stringify({ status: status })

@@ -156,13 +156,6 @@
                                         Event Selesai
                                     </span>
 
-                                {{-- SUDAH PRESENT SECARA MANUAL --}}
-                                @elseif(isset($attendance) && $attendance->status === 'present')
-                                    <span class="inline-block text-[11px] font-semibold text-gray-600 border border-gray-200 px-4 py-1.5 rounded-lg bg-white shadow-sm">
-                                        Already Marked
-                                    </span>
-
-                                {{-- BELUM DI MARK (SEDANG BERLANGSUNG) --}}
                                 @else
                                     <div class="flex justify-center gap-2">
                                         <form method="POST" action="{{ route('attendance.mark', $reg->id) }}">
@@ -170,6 +163,13 @@
                                             <input type="hidden" name="status" value="present">
                                             <button class="bg-black hover:bg-gray-800 text-white px-4 py-1.5 rounded-lg text-[11px] font-semibold shadow-sm transition">
                                                 Mark Present
+                                            </button>
+                                        </form>
+                                        <form method="POST" action="{{ route('attendance.mark', $reg->id) }}">
+                                            @csrf
+                                            <input type="hidden" name="status" value="absent">
+                                            <button class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-1.5 rounded-lg text-[11px] font-semibold shadow-sm transition">
+                                                Mark Absent
                                             </button>
                                         </form>
                                     </div>

@@ -90,6 +90,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/volunteer/registered-events/{id}', [\App\Http\Controllers\RegisteredEventController::class, 'show'])
             ->where('id', '[0-9]+')
             ->name('volunteer.registered-events.show');
+            
+        Route::delete('/volunteer/registered-events/{id}/cancel', [\App\Http\Controllers\RegisteredEventController::class, 'cancel'])
+            ->where('id', '[0-9]+')
+            ->name('volunteer.registered-events.cancel');
     });
     Route::get('/history', [\App\Http\Controllers\EventController::class, 'history'])->name('events.history');
 

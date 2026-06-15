@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 use App\Models\EventRegistration;
 
 class EventController extends Controller
@@ -94,7 +95,9 @@ class EventController extends Controller
     public function manage(Request $request)
     {
         $query = Event::where('organizer_id', auth()->id())
-            ->withCount('registrations');
+            ->withCount(['registrations' => function ($query) {
+                $query->where('status', 'registered');
+            }]);
 
         // Search by title
         if ($request->filled('search')) {
@@ -114,7 +117,7 @@ class EventController extends Controller
             ->findOrFail($id);
 
         $user = auth()->user();
-        $totalVolunteers = $event->registrations->count();
+        $totalVolunteers = $event->registrations->where('status', 'registered')->count();
         
         $isRegistered = false;
         if ($user) {
@@ -146,6 +149,7 @@ class EventController extends Controller
         }
 
         $participants = $event->registrations()
+            ->where('status', 'registered')
             ->with('user')
             ->latest()
             ->paginate(5);
@@ -236,13 +240,17 @@ class EventController extends Controller
             return back()->with('error', 'Kamu sudah terdaftar di event ini');
         }
 
-        if ($event->registrations()->count() >= $event->quota) {
+        if ($event->registrations()->where('status', 'registered')->count() >= $event->quota) {
             return back()->with('error', 'Kuota event sudah penuh');
         }
 
-        if ($event->event_date < now()) {
+        if (\Carbon\Carbon::parse($event->event_date)->addHours($event->duration) < now()) {
             return back()->with('error', 'Event sudah selesai');
         }
+
+        EventRegistration::where('user_id', $user->id)
+            ->where('event_id', $id)
+            ->delete();
 
         EventRegistration::create([
             'user_id' => $user->id,
@@ -327,5 +335,21 @@ class EventController extends Controller
         return view('events.history', compact('histories'));
     }
 
+    public function destroy($id)
+    {
+        $event = Event::findOrFail($id);
+
+        if ($event->organizer_id !== Auth::id()) {
+            abort(403);
+        }
+
+        if ($event->image) {
+            Storage::disk('public')->delete($event->image);
+        }
+
+        $event->delete();
+
+        return redirect()->route('events.manage')->with('success', 'Event berhasil dihapus.');
+    }
 
 }

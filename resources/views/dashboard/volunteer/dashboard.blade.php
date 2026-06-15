@@ -84,7 +84,7 @@
             <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-base font-semibold text-gray-900">Registered Events</h2>
-                    <a href="#" class="text-[11px] font-semibold text-gray-500 hover:text-gray-900">View All</a>
+                    <a href="{{ route('volunteer.registered-events') }}" class="text-[11px] font-semibold text-gray-500 hover:text-gray-900">View All</a>
                 </div>
 
                 <div class="space-y-4">
@@ -126,9 +126,6 @@
                                         <a href="/events/{{ $reg->event->id }}" class="bg-[#1a1c20] hover:bg-black text-white px-4 py-2 rounded-lg text-xs font-medium transition shadow-sm">
                                             View Details
                                         </a>
-                                        <button class="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-lg text-xs font-medium transition">
-                                            Cancel RSVP
-                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -146,7 +143,7 @@
             <div class="mt-6 bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-base font-semibold text-gray-900">Event History</h2>
-                    <a href="#" class="text-[11px] font-semibold text-gray-500 hover:text-gray-900">View All</a>
+                    <a href="{{ route('events.history') }}" class="text-[11px] font-semibold text-gray-500 hover:text-gray-900">View All</a>
                 </div>
 
                 <div class="space-y-3">
@@ -167,7 +164,12 @@
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-4">
-                                    <span class="text-[11px] font-semibold text-gray-600">+150 pts</span>
+                                    @php
+                                        $pointRecord = \App\Models\Point::where('user_id', auth()->id())->where('event_id', $item->event->id)->first();
+                                    @endphp
+                                    @if($pointRecord)
+                                        <span class="text-[11px] font-semibold text-gray-600">+{{ $pointRecord->points }} pts</span>
+                                    @endif
                                     <a href="{{ route('certificates.index') }}?search={{ urlencode($item->event->title) }}" class="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-3 py-1.5 rounded-lg text-[10px] font-semibold transition inline-block">
                                         Certificate
                                     </a>

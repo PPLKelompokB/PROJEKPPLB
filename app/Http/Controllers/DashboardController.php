@@ -20,6 +20,7 @@ class DashboardController extends Controller
 
         $registrations = EventRegistration::with('event')
             ->where('user_id', $user->id)
+            ->where('status', 'registered')
             ->get();
 
         $upcomingEvents = $registrations->filter(fn($r) =>
@@ -56,7 +57,7 @@ class DashboardController extends Controller
     // ========================
     // ORGANIZER
     // ========================
-    public function organizer()
+    public function organizer(\Illuminate\Http\Request $request)
     {
         $user = Auth::user();
 
@@ -65,15 +66,22 @@ class DashboardController extends Controller
             ->latest()
             ->get();
             
-        $events = Event::with('registrations')
+        $query = Event::with('registrations')
             ->where('organizer_id', $user->id)
-            ->latest()
-            ->paginate(5);
+            ->latest();
+            
+        if ($request->has('search') && $request->search != '') {
+            $query->where('title', 'like', '%' . $request->search . '%');
+        }
+
+        $events = $query->paginate(5)->withQueryString();
 
         return view('dashboard.organizer.dashboard', [
             'events' => $events,
             'totalEvents' => $allEvents->count(),
-            'totalVolunteers' => EventRegistration::whereIn('event_id', $allEvents->pluck('id'))->count(),
+            'totalVolunteers' => EventRegistration::whereIn('event_id', $allEvents->pluck('id'))
+                ->where('status', 'registered')
+                ->count(),
             'activeEvents' => $allEvents->filter(function($e) {
                 $start = \Carbon\Carbon::parse($e->event_date);
                 $end = $start->copy()->addHours($e->duration);

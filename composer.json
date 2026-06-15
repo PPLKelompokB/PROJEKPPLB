@@ -49,6 +49,12 @@
             "@php artisan config:clear --ansi",
             "@php artisan test"
         ],
+        "dusk:clean": [
+            "@php artisan db:wipe --env=dusk.local"
+        ],
+        "dusk:reset": [
+            "@php artisan migrate:fresh --env=dusk.local"
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"

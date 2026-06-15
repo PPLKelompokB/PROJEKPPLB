@@ -7,13 +7,21 @@ use App\Models\Event;
 use App\Models\Documentation;
 use App\Models\EventRegistration;
 use App\Models\Attendance;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Laravel\Dusk\Browser;
 use Tests\DuskTestCase;
 
 class AdminDocumentationDuskTest extends DuskTestCase
 {
-    use DatabaseMigrations;
+    /**
+     * Pastikan tabel database sudah ada sebelum test dijalankan.
+     * Menggunakan 'migrate' (bukan 'migrate:fresh') agar data sebelumnya
+     * TIDAK dihapus — data tetap tersimpan setelah testing selesai.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->artisan('migrate');
+    }
 
     // =========================================================
     // HELPER METHODS

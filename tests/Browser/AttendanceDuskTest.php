@@ -6,13 +6,21 @@ use App\Models\User;
 use App\Models\Event;
 use App\Models\EventRegistration;
 use App\Models\Attendance;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Laravel\Dusk\Browser;
 use Tests\DuskTestCase;
 
 class AttendanceDuskTest extends DuskTestCase
 {
-    use DatabaseMigrations;
+    /**
+     * Pastikan tabel database sudah ada sebelum test dijalankan.
+     * Menggunakan 'migrate' (bukan 'migrate:fresh') agar data sebelumnya
+     * TIDAK dihapus — data tetap tersimpan setelah testing selesai.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->artisan('migrate');
+    }
 
     // =========================================================
     // HELPER METHODS
@@ -46,7 +54,7 @@ class AttendanceDuskTest extends DuskTestCase
             'title'        => 'Dusk Event',
             'description'  => 'Test description',
             'location'     => 'Pantai Kuta',
-            'event_date'   => now()->subMinutes(30)->format('Y-m-d H:i:s'), // Default: event sudah lewat agar bisa di-absen
+            'event_date'   => now()->subDays(3)->format('Y-m-d H:i:s'), // Default: event sudah lewat agar bisa di-absen
             'duration'     => 2,
             'quota'        => 50,
             'status'       => 'published',
@@ -97,7 +105,7 @@ class AttendanceDuskTest extends DuskTestCase
                     ->visit('/events/' . $event->id . '/participants')
                     ->pause(1000)
                     ->assertSee('Andi Present')
-                    ->press('Mark Present')
+                    ->click("form[action*=\"status=present\"] button")
                     ->pause(1000)
                     ->assertSee('Status berhasil diupdate');
         });
@@ -130,7 +138,7 @@ class AttendanceDuskTest extends DuskTestCase
                     ->visit('/events/' . $event->id . '/participants')
                     ->pause(1000)
                     ->assertSee('Siti Absent')
-                    ->press('Mark Absent')
+                    ->click("form[action*=\"status=absent\"] button")
                     ->pause(1000)
                     ->assertSee('Status berhasil diupdate');
         });
@@ -164,7 +172,7 @@ class AttendanceDuskTest extends DuskTestCase
                     ->pause(1000)
                     ->assertSee('Ubah Ke Absent')
                     // tombol Absent untuk row volunteer ini (biasanya yg kedua)
-                    ->press('Mark Absent')
+                    ->click("form[action*=\"status=absent\"] button")
                     ->pause(1000)
                     ->assertSee('Status berhasil diupdate');
         });
@@ -198,7 +206,7 @@ class AttendanceDuskTest extends DuskTestCase
                     ->pause(1000)
                     ->assertSee('Ubah Ke Present')
                     // tombol Present untuk row volunteer ini
-                    ->press('Mark Present')
+                    ->click("form[action*=\"status=present\"] button")
                     ->pause(1000)
                     ->assertSee('Status berhasil diupdate');
         });
@@ -430,7 +438,7 @@ class AttendanceDuskTest extends DuskTestCase
                     ->pause(2000)
                     ->visit('/events/' . $event->id . '/participants')
                     ->pause(1000)
-                    ->press('Mark Present')
+                    ->click("form[action*=\"status=present\"] button")
                     ->pause(1000);
         });
 
@@ -467,13 +475,13 @@ class AttendanceDuskTest extends DuskTestCase
                     ->pause(1000);
                     
             // Mark Vol A Present
-            $browser->within("form[action*=\"attendance/{$volA->registrations()->first()->id}/mark\"]:has(input[value=\"present\"])", function ($form) { $form->press('Mark ' . ucfirst('present')); })
+            $browser->click("form[action*=\"attendance/{$volA->registrations()->first()->id}/mark\"][action*=\"status=present\"] button")
                     ->pause(1000);
             // Mark Vol B Absent
-            $browser->within("form[action*=\"attendance/{$volB->registrations()->first()->id}/mark\"]:has(input[value=\"absent\"])", function ($form) { $form->press('Mark ' . ucfirst('absent')); })
+            $browser->click("form[action*=\"attendance/{$volB->registrations()->first()->id}/mark\"][action*=\"status=absent\"] button")
                     ->pause(1000);
             // Mark Vol C Present
-            $browser->within("form[action*=\"attendance/{$volC->registrations()->first()->id}/mark\"]:has(input[value=\"present\"])", function ($form) { $form->press('Mark ' . ucfirst('present')); })
+            $browser->click("form[action*=\"attendance/{$volC->registrations()->first()->id}/mark\"][action*=\"status=present\"] button")
                     ->pause(1000);
         });
 

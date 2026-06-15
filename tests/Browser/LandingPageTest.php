@@ -2,7 +2,6 @@
 
 namespace Tests\Browser;
 
-use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Laravel\Dusk\Browser;
 use Tests\DuskTestCase;
 use App\Models\Event;
@@ -10,7 +9,6 @@ use App\Models\User;
 
 class LandingPageTest extends DuskTestCase
 {
-    use DatabaseMigrations;
 
     /**
      * TC-106-01: (Alur Utama) User membuka halaman utama OceanCare melalui URL yang valid.

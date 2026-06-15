@@ -6,13 +6,11 @@ use App\Models\User;
 use App\Models\Event;
 use App\Models\EventRegistration;
 use App\Models\Attendance;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Laravel\Dusk\Browser;
 use Tests\DuskTestCase;
 
 class ViewEventParticipantsTest extends DuskTestCase
 {
-    use DatabaseMigrations;
 
     /**
      * TC-PBI11-01: Organizer (Pemilik Event) melihat daftar peserta event miliknya.

@@ -81,7 +81,9 @@
                        M9 5a2 2 0 012-2h2a2 2 0 012 2
                        m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
             </svg>
-            @if(request()->filled('search') || request()->filled('status'))
+            @if(request()->filled('search'))
+                <p class="text-sm text-gray-500">Tidak ada event yang sesuai dengan pencarian.</p>
+            @elseif(request()->filled('status'))
                 <p class="text-sm text-gray-500">Tidak ada event yang sesuai dengan filter yang dipilih.</p>
             @else
                 <p class="text-sm text-gray-500">Belum ada event yang terdaftar.</p>
@@ -186,19 +188,11 @@
                                 </a>
 
                             @else
-                                {{-- Upcoming / Registered: View Details + Cancel --}}
+                                {{-- Upcoming / Registered: View Details --}}
                                 <a href="{{ route('volunteer.registered-events.show', $event->id) }}"
-                                   class="flex-1 py-2 px-4 rounded-lg text-sm font-semibold text-white bg-black hover:bg-gray-800 transition-colors text-center">
+                                   class="w-full py-2 px-4 rounded-lg text-sm font-semibold text-white bg-black hover:bg-gray-800 transition-colors text-center">
                                     View Details
                                 </a>
-                                <form action="{{ route('volunteer.registered-events.cancel', $event->id) }}" method="POST" onsubmit="return confirm('Apakah kamu yakin ingin membatalkan pendaftaran event ini?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit"
-                                        class="py-2 px-3 border border-gray-300 rounded-lg text-xs font-medium text-gray-600 bg-white hover:bg-gray-50 transition-colors">
-                                        Cancel
-                                    </button>
-                                </form>
                             @endif
                         </div>
                     </div>

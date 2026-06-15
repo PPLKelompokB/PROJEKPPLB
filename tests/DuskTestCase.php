@@ -9,8 +9,21 @@ use Illuminate\Support\Collection;
 use Laravel\Dusk\TestCase as BaseTestCase;
 use PHPUnit\Framework\Attributes\BeforeClass;
 
+use Illuminate\Contracts\Console\Kernel;
+
 abstract class DuskTestCase extends BaseTestCase
 {
+    /**
+     * Run migrations without dropping tables to preserve data.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        
+        $this->artisan('migrate');
+        $this->app[Kernel::class]->setArtisan(null);
+    }
+
     /**
      * Prepare for Dusk test execution.
      */

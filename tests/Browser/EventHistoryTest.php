@@ -6,13 +6,11 @@ use App\Models\User;
 use App\Models\Event;
 use App\Models\Attendance;
 use App\Models\EventRegistration;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Laravel\Dusk\Browser;
 use Tests\DuskTestCase;
 
 class EventHistoryTest extends DuskTestCase
 {
-    use DatabaseMigrations;
 
     // ==========================================
     // HIS-TC01: Tampil Daftar History & Statusnya

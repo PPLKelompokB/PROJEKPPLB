@@ -5,13 +5,11 @@ namespace Tests\Browser;
 use App\Models\User;
 use App\Models\Event;
 use App\Models\EventRegistration;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Laravel\Dusk\Browser;
 use Tests\DuskTestCase;
 
 class RegisteredEventTest extends DuskTestCase
 {
-    use DatabaseMigrations;
 
     private function createEvent($overrides = []) {
         $organizer = User::firstOrCreate(['email' => 'org@test.com'], [
@@ -186,7 +184,7 @@ class RegisteredEventTest extends DuskTestCase
                     ->visit('/volunteer/registered-events')
                     ->type('search', 'Nonexistent')
                     ->keys('input[name="search"]', '{enter}')
-                    ->assertSee('Tidak ada event yang sesuai dengan filter yang dipilih.');
+                    ->assertSee('Tidak ada event yang sesuai dengan pencarian.');
         });
     }
 

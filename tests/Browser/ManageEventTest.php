@@ -5,7 +5,6 @@ namespace Tests\Browser;
 use App\Models\Event;
 use App\Models\User;
 use App\Models\EventRegistration;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Dusk\Browser;
@@ -13,7 +12,6 @@ use Tests\DuskTestCase;
 
 class ManageEventTest extends DuskTestCase
 {
-    use DatabaseMigrations;
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
 

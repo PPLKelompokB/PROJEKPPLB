@@ -153,10 +153,10 @@
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                 </a>
 
-                                <form action="/events/{{ $event->id }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this event?');">
+                                <form action="/events/{{ $event->id }}" method="POST" class="inline-block delete-form">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition">
+                                    <button type="button" onclick="openDashboardDeleteModal(this)" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                     </button>
                                 </form>
@@ -221,5 +221,43 @@
 
     </div>
 
+{{-- Delete Confirmation Modal --}}
+<div id="dashboardDeleteModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-sm mx-4 shadow-xl transform transition-all">
+        <h3 class="text-lg font-semibold text-gray-900 mb-6 text-center">Are you sure you want to delete this event?</h3>
+        <div class="flex gap-4">
+            <button type="button" onclick="closeDashboardDeleteModal()" class="flex-1 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
+                Cancel
+            </button>
+            <button type="button" onclick="confirmDashboardDelete()" class="flex-1 py-2.5 bg-red-600 rounded-lg text-sm font-medium text-white hover:bg-red-700 transition">
+                Confirm Delete
+            </button>
+        </div>
+    </div>
 </div>
+
+@push('scripts')
+<script>
+    let activeDeleteForm = null;
+
+    function openDashboardDeleteModal(btn) {
+        activeDeleteForm = btn.closest('form');
+        document.getElementById('dashboardDeleteModal').classList.remove('hidden');
+        document.getElementById('dashboardDeleteModal').classList.add('flex');
+    }
+
+    function closeDashboardDeleteModal() {
+        document.getElementById('dashboardDeleteModal').classList.add('hidden');
+        document.getElementById('dashboardDeleteModal').classList.remove('flex');
+        activeDeleteForm = null;
+    }
+
+    function confirmDashboardDelete() {
+        if (activeDeleteForm) {
+            activeDeleteForm.submit();
+        }
+    }
+</script>
+@endpush
+
 @endsection

@@ -27,6 +27,18 @@
             @csrf
             @method('PUT')
 
+            {{-- ❌ Validation Errors --}}
+            @if ($errors->any())
+                <div class="mb-6 bg-red-50 border border-red-200 rounded-lg px-5 py-4">
+                    <p class="text-sm font-semibold text-red-700 mb-2">Terdapat kesalahan pada form:</p>
+                    <ul class="list-disc list-inside space-y-1">
+                        @foreach ($errors->all() as $error)
+                            <li class="text-sm text-red-600">{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             {{-- IMAGE UPLOAD --}}
             <div class="mb-6">
                 <label class="block text-sm text-gray-700 mb-2">Event Image</label>
@@ -56,9 +68,9 @@
             <div class="mb-5">
                 <label class="block text-sm text-gray-700 mb-1.5">Event Name <span class="text-gray-500">*</span></label>
                 <input type="text" name="title"
-                    value="{{ $event->title }}"
+                    value="{{ old('title', $event->title) }}"
                     placeholder="Enter event name"
-                    class="w-full border border-gray-300 rounded-md px-4 py-2.5 text-sm focus:ring-1 focus:ring-black focus:border-black outline-none placeholder-gray-400 transition">
+                    class="w-full border border-gray-300 rounded-md px-4 py-2.5 text-sm focus:ring-1 focus:ring-black focus:border-black outline-none placeholder-gray-400 transition" required>
             </div>
 
             {{-- LOCATION --}}
@@ -72,9 +84,9 @@
                         </svg>
                     </div>
                     <input type="text" name="location"
-                        value="{{ $event->location }}"
+                        value="{{ old('location', $event->location) }}"
                         placeholder="Search for beach location"
-                        class="w-full border border-gray-300 rounded-md pl-10 pr-4 py-2.5 text-sm focus:ring-1 focus:ring-black focus:border-black outline-none placeholder-gray-400 transition">
+                        class="w-full border border-gray-300 rounded-md pl-10 pr-4 py-2.5 text-sm focus:ring-1 focus:ring-black focus:border-black outline-none placeholder-gray-400 transition" required>
                 </div>
             </div>
 
@@ -83,15 +95,15 @@
                 <div>
                     <label class="block text-sm text-gray-700 mb-1.5">Event Date <span class="text-gray-500">*</span></label>
                     <input type="date" name="date"
-                        value="{{ \Carbon\Carbon::parse($event->event_date)->format('Y-m-d') }}"
-                        class="w-full border border-gray-300 rounded-md px-4 py-2.5 text-sm focus:ring-1 focus:ring-black focus:border-black outline-none text-gray-700 transition">
+                        value="{{ old('date', \Carbon\Carbon::parse($event->event_date)->format('Y-m-d')) }}"
+                        class="w-full border border-gray-300 rounded-md px-4 py-2.5 text-sm focus:ring-1 focus:ring-black focus:border-black outline-none text-gray-700 transition" required>
                 </div>
 
                 <div>
                     <label class="block text-sm text-gray-700 mb-1.5">Start Time <span class="text-gray-500">*</span></label>
                     <input type="time" name="time"
-                        value="{{ \Carbon\Carbon::parse($event->event_date)->format('H:i') }}"
-                        class="w-full border border-gray-300 rounded-md px-4 py-2.5 text-sm focus:ring-1 focus:ring-black focus:border-black outline-none text-gray-700 transition">
+                        value="{{ old('time', \Carbon\Carbon::parse($event->event_date)->format('H:i')) }}"
+                        class="w-full border border-gray-300 rounded-md px-4 py-2.5 text-sm focus:ring-1 focus:ring-black focus:border-black outline-none text-gray-700 transition" required>
                 </div>
             </div>
 
@@ -99,10 +111,10 @@
             <div class="grid grid-cols-2 gap-5 mb-5">
                 <div>
                     <label class="block text-sm text-gray-700 mb-1.5">Duration (hours)</label>
-                    <select name="duration" class="w-full border border-gray-300 rounded-md px-4 py-2.5 text-sm focus:ring-1 focus:ring-black focus:border-black outline-none text-gray-700 transition">
+                    <select name="duration" class="w-full border border-gray-300 rounded-md px-4 py-2.5 text-sm focus:ring-1 focus:ring-black focus:border-black outline-none text-gray-700 transition" required>
                         <option value="">Select duration</option>
-                        @for($i=1; $i<=8; $i++)
-                            <option value="{{ $i }}" {{ $event->duration == $i ? 'selected' : '' }}>
+                        @for($i=1; $i<=12; $i++)
+                            <option value="{{ $i }}" {{ old('duration', $event->duration) == $i ? 'selected' : '' }}>
                                 {{ $i }}
                             </option>
                         @endfor
@@ -112,9 +124,9 @@
                 <div>
                     <label class="block text-sm text-gray-700 mb-1.5">Volunteer Quota <span class="text-gray-500">*</span></label>
                     <input type="number" name="quota"
-                        value="{{ $event->quota }}"
+                        value="{{ old('quota', $event->quota) }}"
                         placeholder="Maximum number of volunteers"
-                        class="w-full border border-gray-300 rounded-md px-4 py-2.5 text-sm focus:ring-1 focus:ring-black focus:border-black outline-none placeholder-gray-400 transition">
+                        class="w-full border border-gray-300 rounded-md px-4 py-2.5 text-sm focus:ring-1 focus:ring-black focus:border-black outline-none placeholder-gray-400 transition" required>
                 </div>
             </div>
 
@@ -123,7 +135,7 @@
                 <label class="block text-sm text-gray-700 mb-1.5">Event Description <span class="text-gray-500">*</span></label>
                 <textarea name="description" rows="5"
                     placeholder="Describe the event, what volunteers can expect, what to bring, meeting point details, etc."
-                    class="w-full border border-gray-300 rounded-md px-4 py-2.5 text-sm focus:ring-1 focus:ring-black focus:border-black outline-none placeholder-gray-400 transition resize-y">{{ $event->description }}</textarea>
+                    class="w-full border border-gray-300 rounded-md px-4 py-2.5 text-sm focus:ring-1 focus:ring-black focus:border-black outline-none placeholder-gray-400 transition resize-y" required>{{ old('description', $event->description) }}</textarea>
             </div>
 
             {{-- MEETING POINT --}}
@@ -137,7 +149,7 @@
                         </svg>
                     </div>
                     <input type="text" name="meeting_point"
-                        value="North Section of Palisade Park"
+                        value="{{ old('meeting_point', $event->meeting_point) }}"
                         placeholder="Enter Meeting Point"
                         class="w-full border border-gray-300 rounded-md pl-10 pr-4 py-2.5 text-sm focus:ring-1 focus:ring-black focus:border-black outline-none placeholder-gray-400 transition">
                 </div>
@@ -151,7 +163,7 @@
                     <div>
                         <label class="block text-sm text-gray-700 mb-1.5">Contact Person <span class="text-gray-500">*</span></label>
                         <input type="text" name="contact_person"
-                            value="John Doe"
+                            value="{{ old('contact_person', $event->contact_person) }}"
                             placeholder="Full name"
                             class="w-full border border-gray-300 rounded-md px-4 py-2.5 text-sm focus:ring-1 focus:ring-black focus:border-black outline-none placeholder-gray-400 transition">
                     </div>
@@ -159,7 +171,7 @@
                     <div>
                         <label class="block text-sm text-gray-700 mb-1.5">Phone Number <span class="text-gray-500">*</span></label>
                         <input type="text" name="phone"
-                            value="+62 888 9898 9898"
+                            value="{{ old('phone', $event->contact_phone) }}"
                             placeholder="Phone number"
                             class="w-full border border-gray-300 rounded-md px-4 py-2.5 text-sm focus:ring-1 focus:ring-black focus:border-black outline-none placeholder-gray-400 transition">
                     </div>

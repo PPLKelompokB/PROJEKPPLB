@@ -102,7 +102,7 @@ class EventHistoryTest extends TestCase
         $response = $this->actingAs($this->volunteer)->get('/history?search=Pantai+Kuta');
 
         $response->assertStatus(200);
-        $response->assertSee('Belum Ada History'); 
+        $response->assertSee('Tidak ada event yang sesuai dengan pencarian.'); 
     }
 
     public function test_HIS_TC06_filter_by_year()

@@ -2,7 +2,6 @@
 
 namespace Tests\Browser;
 
-use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Laravel\Dusk\Browser;
 use Tests\DuskTestCase;
 use App\Models\User;
@@ -14,7 +13,6 @@ use App\Models\Point;
 
 class AdminDashboardTest extends DuskTestCase
 {
-    use DatabaseMigrations;
 
     private function makeAdmin(): User
     {

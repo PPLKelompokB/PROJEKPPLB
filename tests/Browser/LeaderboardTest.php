@@ -5,13 +5,11 @@ namespace Tests\Browser;
 use App\Models\User;
 use App\Models\Event;
 use App\Models\Attendance;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Laravel\Dusk\Browser;
 use Tests\DuskTestCase;
 
 class LeaderboardTest extends DuskTestCase
 {
-    use DatabaseMigrations;
 
     // ==========================================
     // LDB-TC01: Leaderboard Volunteer (Summary)

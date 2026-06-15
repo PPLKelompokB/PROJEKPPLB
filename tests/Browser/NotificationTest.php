@@ -4,13 +4,11 @@ namespace Tests\Browser;
 
 use App\Models\User;
 use App\Models\Notification;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Laravel\Dusk\Browser;
 use Tests\DuskTestCase;
 
 class NotificationTest extends DuskTestCase
 {
-    use DatabaseMigrations;
 
     /**
      * TC-PBI15-03: Organizer melihat badge notifikasi merah.

@@ -5,13 +5,11 @@ namespace Tests\Browser;
 use App\Models\User;
 use App\Models\Event;
 use App\Models\EventRegistration;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Laravel\Dusk\Browser;
 use Tests\DuskTestCase;
 
 class EventDetailTest extends DuskTestCase
 {
-    use DatabaseMigrations;
 
     /**
      * TC-PBI6-01: Pengguna mengklik salah satu event dari daftar event (ID Event valid).

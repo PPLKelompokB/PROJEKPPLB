@@ -36,17 +36,10 @@
 
         {{-- ================= PUBLIC ================= --}}
         @if($mode === 'public')
-            @auth
-                <a href="{{ route('events.show', $event->id) }}"
-                   class="block w-full text-center bg-black text-white py-2.5 rounded-md text-sm font-medium hover:bg-gray-800 transition">
-                    View Details
-                </a>
-            @else
-                <button onclick="openModal()"
-                    class="block w-full text-center bg-black text-white py-2.5 rounded-md text-sm font-medium hover:bg-gray-800 transition">
-                    View Details
-                </button>
-            @endauth
+            <a href="{{ route('events.show', $event->id) }}"
+               class="block w-full text-center bg-black text-white py-2.5 rounded-md text-sm font-medium hover:bg-gray-800 transition">
+                View Details
+            </a>
         @endif
 
         {{-- ================= ORGANIZER ================= --}}

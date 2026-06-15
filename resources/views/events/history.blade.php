@@ -102,7 +102,7 @@
                         </a>
                         
                         @if($hasCertificate)
-                            <a href="#" class="flex justify-center items-center py-2 px-3 border border-gray-300 shadow-sm rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none transition">
+                            <a href="{{ route('certificates.download', $event->id) }}" target="_blank" title="Download Certificate" class="flex justify-center items-center py-2 px-3 border border-gray-300 shadow-sm rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none transition">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                 </svg>
@@ -122,8 +122,8 @@
                 <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
-                <h3 class="mt-2 text-sm font-medium text-gray-900">Belum Ada History</h3>
-                <p class="mt-1 text-sm text-gray-500">Kamu belum pernah berpartisipasi dalam event yang sudah selesai.</p>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">No history yet</h3>
+                <p class="mt-1 text-sm text-gray-500">You have never participated in an event that has already been completed.</p>
             </div>
         @endforelse
     </div>

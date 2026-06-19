@@ -21,28 +21,44 @@
     {{-- CARD FORM --}}
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
 
-        <form action="{{ route('events.store') }}" method="POST" enctype="multipart/form-data">
+        <form id="eventForm" action="{{ route('events.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
+
+            {{-- ❌ Validation Errors --}}
+            @if ($errors->any())
+                <div class="mb-6 bg-red-50 border border-red-200 rounded-lg px-5 py-4">
+                    <p class="text-sm font-semibold text-red-700 mb-2">Terdapat kesalahan pada form:</p>
+                    <ul class="list-disc list-inside space-y-1">
+                        @foreach ($errors->all() as $error)
+                            <li class="text-sm text-red-600">{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
 
             {{-- IMAGE UPLOAD --}}
             <div class="mb-6">
                 <label class="block text-sm text-gray-700 mb-2">Event Image</label>
 
                 <div class="border-[1.5px] border-dashed border-gray-300 rounded-lg p-10 flex flex-col items-center justify-center text-center hover:bg-gray-50 transition cursor-pointer" onclick="document.getElementById('imageInput').click()">
-                    <div class="flex flex-col items-center gap-1">
+                    <div class="flex flex-col items-center gap-1" id="uploadPlaceholder">
                         <svg class="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                         </svg>
                         <p class="text-sm text-gray-600">Click to upload or drag and drop</p>
                         <p class="text-xs text-gray-400 mb-3">PNG, JPG up to 5MB</p>
 
-                        <input type="file" name="image" class="hidden" id="imageInput">
-
                         <button type="button"
                             class="bg-black text-white px-5 py-2 rounded-md text-sm font-medium hover:bg-gray-800 transition">
                             Choose File
                         </button>
                     </div>
+                    
+                    <img id="imagePreview" class="hidden max-h-48 rounded shadow-sm">
+                    <p id="fileName" class="hidden text-sm text-gray-600 mt-3 font-medium"></p>
+                    
+                    <input type="file" name="image" class="hidden" id="imageInput" accept="image/*">
                 </div>
             </div>
 
@@ -137,11 +153,11 @@
 
             {{-- BUTTONS --}}
             <div class="flex justify-end gap-3 mt-8">
-                <button type="button" class="px-6 py-2.5 border border-gray-300 rounded-md text-gray-700 font-medium text-sm hover:bg-gray-50 transition">
+                <button type="submit" name="action" value="draft" class="px-6 py-2.5 border border-gray-300 rounded-md text-gray-700 font-medium text-sm hover:bg-gray-50 transition">
                     Save as Draft
                 </button>
 
-                <button type="submit" class="px-6 py-2.5 bg-black text-white rounded-md font-medium text-sm hover:bg-gray-800 transition">
+                <button type="submit" name="action" value="publish" class="px-6 py-2.5 bg-black text-white rounded-md font-medium text-sm hover:bg-gray-800 transition">
                     Create Event
                 </button>
             </div>
@@ -151,4 +167,32 @@
     </div>
 
 </div>
+
+@push('scripts')
+<script>
+    document.getElementById('imageInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            let placeholder = document.getElementById('uploadPlaceholder');
+            let preview = document.getElementById('imagePreview');
+            let fileName = document.getElementById('fileName');
+            
+            placeholder.classList.add('hidden');
+            preview.src = URL.createObjectURL(file);
+            preview.classList.remove('hidden');
+            
+            fileName.textContent = file.name;
+            fileName.classList.remove('hidden');
+        }
+    });
+
+    document.getElementById('eventForm').addEventListener('submit', function(e) {
+        let quota = document.querySelector('input[name="quota"]').value;
+        if (quota <= 0) {
+            e.preventDefault();
+            alert('Data volunteer quota harus lebih dari 0');
+        }
+    });
+</script>
+@endpush
 @endsection

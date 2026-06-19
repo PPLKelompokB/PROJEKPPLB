@@ -25,7 +25,6 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                     </svg>
                 </div>
-                <span class="text-[11px] font-semibold text-gray-500 tracking-wide">+28%</span>
             </div>
             <h3 class="text-3xl font-semibold text-gray-900 mt-5">{{ number_format($totalUsers) }}</h3>
             <p class="text-xs font-medium text-gray-500 mt-1">Total Users</p>
@@ -39,7 +38,6 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                 </div>
-                <span class="text-[11px] font-semibold text-gray-500 tracking-wide">+12%</span>
             </div>
             <h3 class="text-3xl font-semibold text-gray-900 mt-5">{{ number_format($totalEvents) }}</h3>
             <p class="text-xs font-medium text-gray-500 mt-1">Total Events</p>
@@ -53,7 +51,6 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
                     </svg>
                 </div>
-                <span class="text-[11px] font-semibold text-gray-500 tracking-wide">Live</span>
             </div>
             <h3 class="text-3xl font-semibold text-gray-900 mt-5">{{ number_format($finishedEvents) }}</h3>
             <p class="text-xs font-medium text-gray-500 mt-1">Total Finished Events</p>
@@ -71,18 +68,13 @@
             </div>
 
             <div class="flex items-center gap-3">
-                <div class="relative">
+                <form action="{{ route('admin.dashboard') }}" method="GET" class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </div>
-                    <input type="text" placeholder="Search events..."
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search events..."
                         class="border border-gray-200 rounded-lg pl-9 pr-4 py-2.5 text-sm w-64 focus:outline-none focus:ring-1 focus:ring-gray-300 transition">
-                </div>
-                <button class="border border-gray-200 rounded-lg p-2.5 text-gray-600 hover:bg-gray-50 transition">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                    </svg>
-                </button>
+                </form>
             </div>
         </div>
 
@@ -130,8 +122,8 @@
 
                             {{-- STATUS --}}
                             <td class="py-4 px-6">
-                                @if(strtolower($event->admin_status) == 'accepted' || strtolower($event->admin_status) == 'verified')
-                                    <span class="bg-black text-white px-3 py-1 rounded-full text-[11px] font-semibold tracking-wide capitalize">Accepted</span>
+                                @if(in_array(strtolower($event->admin_status), ['accepted', 'verified', 'approved']))
+                                    <span class="bg-black text-white px-3 py-1 rounded-full text-[11px] font-semibold tracking-wide capitalize">Approved</span>
                                 @elseif(strtolower($event->admin_status) == 'rejected')
                                     <span class="bg-gray-100 text-gray-500 border border-gray-200 px-3 py-1 rounded-full text-[11px] font-semibold tracking-wide capitalize">Rejected</span>
                                 @else
@@ -147,7 +139,7 @@
                                 </a>
 
                                 {{-- VERIFY / EDIT --}}
-                                <a href="/admin/events/{{ $event->id }}/verify" class="inline-block p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded transition" title="Verify Event">
+                                <a href="{{ route('admin.documentation.show', $event->id) }}" class="inline-block p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded transition" title="Verify Event">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                 </a>
                             </td>
@@ -165,28 +157,49 @@
         </div>
 
         <!-- Pagination -->
+        @if($events->hasPages())
         <div class="p-4 border-t border-gray-100 flex justify-between items-center bg-white">
             <p class="text-[11px] font-medium text-gray-500">
-                Showing 1 to {{ count($events) }} of {{ $totalEvents }} events
+                Showing {{ $events->firstItem() }} to {{ $events->lastItem() }} of {{ $events->total() }} events
             </p>
             <div class="flex items-center gap-1.5">
-                <button class="w-8 h-8 flex items-center justify-center border border-gray-200 rounded text-gray-500 hover:bg-gray-50 transition">
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-                </button>
-                <button class="w-8 h-8 flex items-center justify-center bg-black text-white rounded font-medium text-xs shadow-sm">
-                    1
-                </button>
-                <button class="w-8 h-8 flex items-center justify-center border border-gray-200 rounded text-gray-600 hover:bg-gray-50 transition font-medium text-xs">
-                    2
-                </button>
-                <button class="w-8 h-8 flex items-center justify-center border border-gray-200 rounded text-gray-600 hover:bg-gray-50 transition font-medium text-xs">
-                    3
-                </button>
-                <button class="w-8 h-8 flex items-center justify-center border border-gray-200 rounded text-gray-500 hover:bg-gray-50 transition">
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                </button>
+                {{-- Previous --}}
+                @if ($events->onFirstPage())
+                    <button class="w-8 h-8 flex items-center justify-center border border-gray-200 rounded text-gray-400 cursor-not-allowed">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    </button>
+                @else
+                    <a href="{{ $events->previousPageUrl() }}" class="w-8 h-8 flex items-center justify-center border border-gray-200 rounded text-gray-500 hover:bg-gray-50 transition">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    </a>
+                @endif
+
+                {{-- Pages --}}
+                @foreach ($events->getUrlRange(1, $events->lastPage()) as $page => $url)
+                    @if ($page == $events->currentPage())
+                        <button class="w-8 h-8 flex items-center justify-center bg-black text-white rounded font-medium text-xs shadow-sm">
+                            {{ $page }}
+                        </button>
+                    @else
+                        <a href="{{ $url }}" class="w-8 h-8 flex items-center justify-center border border-gray-200 rounded text-gray-600 hover:bg-gray-50 transition font-medium text-xs">
+                            {{ $page }}
+                        </a>
+                    @endif
+                @endforeach
+
+                {{-- Next --}}
+                @if ($events->hasMorePages())
+                    <a href="{{ $events->nextPageUrl() }}" class="w-8 h-8 flex items-center justify-center border border-gray-200 rounded text-gray-500 hover:bg-gray-50 transition">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </a>
+                @else
+                    <button class="w-8 h-8 flex items-center justify-center border border-gray-200 rounded text-gray-400 cursor-not-allowed">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </button>
+                @endif
             </div>
         </div>
+        @endif
 
     </div>
 

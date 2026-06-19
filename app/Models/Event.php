@@ -23,6 +23,11 @@ class Event extends Model
         return $this->hasMany(EventRegistration::class);
     }
 
+    public function documentations()
+    {
+        return $this->hasMany(Documentation::class);
+    }
+
     public function attendances()
     {
         return $this->hasMany(Attendance::class);
@@ -51,5 +56,39 @@ class Event extends Model
         }
 
         return 'upcoming';
+    }
+
+    public function getCompletionStatusAttribute()
+    {
+        $start = \Carbon\Carbon::parse($this->event_date);
+        $end = $start->copy()->addHours($this->duration);
+        $now = now();
+
+        if ($now < $start) {
+            return 'Upcoming';
+        } elseif ($now >= $start && $now <= $end) {
+            return 'Ongoing';
+        } else {
+            return 'Finished';
+        }
+    }
+
+    public function getAdminStatusAttribute()
+    {
+        $docs = $this->documentations;
+        
+        if ($docs->isEmpty()) {
+            return 'to be verified';
+        }
+        
+        if ($docs->where('status', 'approved')->count() > 0) {
+            return 'approved';
+        }
+        
+        if ($docs->where('status', 'pending')->count() > 0) {
+            return 'to be verified';
+        }
+        
+        return 'rejected';
     }
 }

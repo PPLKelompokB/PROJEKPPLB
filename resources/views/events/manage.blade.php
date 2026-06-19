@@ -15,6 +15,20 @@
         </p>
     </div>
 
+    @if(session('success'))
+        <div id="flashSuccess" class="mb-6 flex items-center gap-3 bg-green-50 border border-green-200 text-green-800 rounded-xl px-5 py-3 text-sm font-medium shadow-sm">
+            <svg class="w-5 h-5 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span>{{ session('success') }}</span>
+            <button type="button" onclick="document.getElementById('flashSuccess').remove()" class="ml-auto text-green-500 hover:text-green-700 transition">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+    @endif
+
     {{-- GRID --}}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @forelse($events as $event)
@@ -26,7 +40,12 @@
 
                 <!-- Content -->
                 <div class="p-6 flex flex-col flex-grow">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-4">{{ $event->title }}</h2>
+                    <div class="flex items-start justify-between mb-4">
+                        <h2 class="text-lg font-semibold text-gray-900">{{ $event->title }}</h2>
+                        @if($event->status === 'draft')
+                            <span class="inline-flex items-center px-2 py-1 rounded text-[10px] font-medium bg-gray-100 text-gray-600 border border-gray-200">Draft</span>
+                        @endif
+                    </div>
 
                     <div class="space-y-2 mb-6 flex-grow">
                         <!-- Location -->

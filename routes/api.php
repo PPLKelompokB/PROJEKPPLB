@@ -38,8 +38,4 @@ Route::prefix('documentations')->middleware('auth')->group(function () {
 | Notification API
 |--------------------------------------------------------------------------
 */
-
-Route::middleware('auth')->group(function () {
-    Route::get('/notifications', [NotificationController::class, 'index']);
-    Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
-});
+// Moved to web.php for session auth

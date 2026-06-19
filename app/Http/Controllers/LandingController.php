@@ -13,6 +13,7 @@ class LandingController extends Controller
             'events' => Event::latest()->take(6)->get(),
             'totalEvents' => Event::count(),
             'totalVolunteers' => User::where('role', 'volunteer')->count(),
+            'finishedEvents' => Event::where('event_date', '<', now())->count(),
         ]);
     }
 }

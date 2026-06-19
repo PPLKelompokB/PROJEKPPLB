@@ -14,6 +14,7 @@ class LoginController extends Controller
             'events' => \App\Models\Event::latest()->take(6)->get(),
             'totalEvents' => \App\Models\Event::count(),
             'totalVolunteers' => \App\Models\User::where('role', 'volunteer')->count(),
+            'finishedEvents' => \App\Models\Event::where('event_date', '<', now())->count(),
         ]);
     }
 

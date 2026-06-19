@@ -20,6 +20,7 @@ class DashboardController extends Controller
 
         $registrations = EventRegistration::with('event')
             ->where('user_id', $user->id)
+            ->where('status', 'registered')
             ->get();
 
         $upcomingEvents = $registrations->filter(fn($r) =>
@@ -56,20 +57,36 @@ class DashboardController extends Controller
     // ========================
     // ORGANIZER
     // ========================
-    public function organizer()
+    public function organizer(\Illuminate\Http\Request $request)
     {
         $user = Auth::user();
 
-        $events = Event::with('registrations')
+        $allEvents = Event::with('registrations')
             ->where('organizer_id', $user->id)
             ->latest()
             ->get();
+            
+        $query = Event::with('registrations')
+            ->where('organizer_id', $user->id)
+            ->latest();
+            
+        if ($request->has('search') && $request->search != '') {
+            $query->where('title', 'like', '%' . $request->search . '%');
+        }
+
+        $events = $query->paginate(5)->withQueryString();
 
         return view('dashboard.organizer.dashboard', [
             'events' => $events,
-            'totalEvents' => $events->count(),
-            'totalVolunteers' => EventRegistration::whereIn('event_id', $events->pluck('id'))->count(),
-            'activeEvents' => $events->where('event_date', '>', now())->count(),
+            'totalEvents' => $allEvents->count(),
+            'totalVolunteers' => EventRegistration::whereIn('event_id', $allEvents->pluck('id'))
+                ->where('status', 'registered')
+                ->count(),
+            'activeEvents' => $allEvents->filter(function($e) {
+                $start = \Carbon\Carbon::parse($e->event_date);
+                $end = $start->copy()->addHours($e->duration);
+                return now() >= $start && now() <= $end;
+            })->count(),
         ]);
     }
 
@@ -79,7 +96,11 @@ class DashboardController extends Controller
     public function admin()
     {
         return view('dashboard.admin.dashboard', [
-            'events' => Event::latest()->paginate(10),
+            'events' => Event::with('documentations')
+                ->search(request('search'))
+                ->latest()
+                ->paginate(10)
+                ->withQueryString(),
             'totalUsers' => User::count(),
             'totalEvents' => Event::count(),
             'finishedEvents' => Event::where('event_date', '<', now())->count(),

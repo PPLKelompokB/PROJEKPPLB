@@ -39,9 +39,9 @@
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
                     </svg>
                 </div>
-                <span class="text-[10px] font-medium text-gray-500 uppercase tracking-wide">Level 5</span>
+                <span class="text-[10px] font-medium text-gray-500 uppercase tracking-wide">Level {{ floor($totalPoints / 100) + 1 }}</span>
             </div>
-            <h3 class="text-3xl font-semibold text-gray-900 mt-5">2,450</h3>
+            <h3 class="text-3xl font-semibold text-gray-900 mt-5">{{ number_format($totalPoints) }}</h3>
             <p class="text-xs font-medium text-gray-500 mt-1">Volunteer Points</p>
         </div>
 
@@ -53,7 +53,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                 </div>
-                <span class="text-[10px] font-medium text-gray-500 uppercase tracking-wide">2025</span>
+                <span class="text-[10px] font-medium text-gray-500 uppercase tracking-wide">All Time</span>
             </div>
             <h3 class="text-3xl font-semibold text-gray-900 mt-5">{{ number_format($totalHours) }}</h3>
             <p class="text-xs font-medium text-gray-500 mt-1">Hours Volunteered</p>
@@ -84,7 +84,7 @@
             <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-base font-semibold text-gray-900">Registered Events</h2>
-                    <a href="#" class="text-[11px] font-semibold text-gray-500 hover:text-gray-900">View All</a>
+                    <a href="{{ route('volunteer.registered-events') }}" class="text-[11px] font-semibold text-gray-500 hover:text-gray-900">View All</a>
                 </div>
 
                 <div class="space-y-4">
@@ -114,7 +114,7 @@
                                         </p>
                                         <p class="text-xs text-gray-600 flex items-center gap-2">
                                             <svg class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                            9:00 AM - 12:00 PM
+                                            {{ \Carbon\Carbon::parse($reg->event->event_date)->format('g:i A') }} - {{ \Carbon\Carbon::parse($reg->event->event_date)->addHours($reg->event->duration)->format('g:i A') }}
                                         </p>
                                         <p class="text-xs text-gray-600 flex items-center gap-2">
                                             <svg class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
@@ -126,9 +126,6 @@
                                         <a href="/events/{{ $reg->event->id }}" class="bg-[#1a1c20] hover:bg-black text-white px-4 py-2 rounded-lg text-xs font-medium transition shadow-sm">
                                             View Details
                                         </a>
-                                        <button class="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-lg text-xs font-medium transition">
-                                            Cancel RSVP
-                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -146,7 +143,7 @@
             <div class="mt-6 bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-base font-semibold text-gray-900">Event History</h2>
-                    <a href="#" class="text-[11px] font-semibold text-gray-500 hover:text-gray-900">View All</a>
+                    <a href="{{ route('events.history') }}" class="text-[11px] font-semibold text-gray-500 hover:text-gray-900">View All</a>
                 </div>
 
                 <div class="space-y-3">
@@ -162,12 +159,17 @@
                                     <div>
                                         <h3 class="text-sm font-semibold text-gray-800">{{ $item->event->title }}</h3>
                                         <p class="text-[11px] text-gray-500 font-medium mt-0.5">
-                                            {{ \Carbon\Carbon::parse($item->event->event_date)->format('F d, Y') }} &bull; 4 hours
+                                            {{ \Carbon\Carbon::parse($item->event->event_date)->format('F d, Y') }} &bull; {{ $item->event->duration }} hours
                                         </p>
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-4">
-                                    <span class="text-[11px] font-semibold text-gray-600">+150 pts</span>
+                                    @php
+                                        $pointRecord = \App\Models\Point::where('user_id', auth()->id())->where('event_id', $item->event->id)->first();
+                                    @endphp
+                                    @if($pointRecord)
+                                        <span class="text-[11px] font-semibold text-gray-600">+{{ $pointRecord->points }} pts</span>
+                                    @endif
                                     <a href="{{ route('certificates.index') }}?search={{ urlencode($item->event->title) }}" class="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-3 py-1.5 rounded-lg text-[10px] font-semibold transition inline-block">
                                         Certificate
                                     </a>
@@ -198,11 +200,11 @@
                     >
 
                     <h3 class="text-base font-semibold text-gray-900 mt-4">{{ $user->name }}</h3>
-                    <p class="text-[11px] font-medium text-gray-500 mt-1">Ocean Guardian &bull; Level 5</p>
+                    <p class="text-[11px] font-medium text-gray-500 mt-1">Ocean Guardian &bull; Level {{ floor($totalPoints / 100) + 1 }}</p>
                     
                     <p class="text-xs text-gray-600 flex items-center gap-1.5 mt-2 font-medium">
                         <svg class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                        Los Angeles, CA
+                        {{ $user->address ?? 'Indonesia' }}
                     </p>
 
                     <div class="w-full mt-6 space-y-4">

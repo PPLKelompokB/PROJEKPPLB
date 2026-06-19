@@ -11,7 +11,7 @@ class VolunteerSeeder extends Seeder
     public function run(): void
     {
         for ($i = 1; $i <= 5; $i++) {
-            User::firstOrCreate(
+            User::updateOrCreate(
                 ['email' => "volunteer$i@mail.com"],
                 [
                     'name' => "Volunteer $i",

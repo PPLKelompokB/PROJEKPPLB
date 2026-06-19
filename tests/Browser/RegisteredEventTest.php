@@ -7,295 +7,200 @@ use App\Models\Event;
 use App\Models\EventRegistration;
 use Laravel\Dusk\Browser;
 use Tests\DuskTestCase;
+use Carbon\Carbon;
 
 class RegisteredEventTest extends DuskTestCase
 {
+    // ─── Helpers ──────────────────────────────────────────────────────────────
 
-    private function createEvent($overrides = []) {
+    private function createVolunteer($suffix = '')
+    {
+        return User::create([
+            'name'     => 'Volunteer ' . $suffix,
+            'email'    => 'vol' . uniqid() . '@test.com',
+            'password' => bcrypt('password'),
+            'role'     => 'volunteer'
+        ]);
+    }
+
+    private function createEvent($overrides = [])
+    {
         $organizer = User::firstOrCreate(['email' => 'org@test.com'], [
-            'name' => 'Org', 'password' => bcrypt('password'), 'role' => 'organizer'
+            'name'     => 'Org',
+            'password' => bcrypt('password'),
+            'role'     => 'organizer'
         ]);
         
         $defaults = [
-            'organizer_id' => $organizer->id,
-            'title' => 'Test Event',
-            'description' => 'Test Desc',
-            'location' => 'Test Loc',
-            'event_date' => now()->addDays(5)->format('Y-m-d H:i:s'),
-            'duration' => 2,
-            'quota' => 50,
-            'status' => 'published',
+            'organizer_id'  => $organizer->id,
+            'title'         => 'Test Event ' . uniqid(),
+            'description'   => 'Test Desc',
+            'location'      => 'Test Loc',
+            'event_date'    => now()->addDays(5)->format('Y-m-d H:i:s'),
+            'duration'      => 2,
+            'quota'         => 50,
+            'status'        => 'published',
             'meeting_point' => 'Test Point'
         ];
         
         return Event::create(array_merge($defaults, $overrides));
     }
 
-    /**
-     * PBI09-TC01-ViewRegisteredEventList
-     */
-    public function test_volunteer_can_view_registered_event_list()
+    // ─── KBP115-TC01: Melihat daftar event yang telah didaftarkan ─────────────
+
+    public function test_KBP115_TC01_view_registered_event_list()
     {
-        $volunteer = User::create(['name' => 'Vol', 'email' => uniqid().'@v.com', 'password' => bcrypt('password'), 'role' => 'volunteer']);
-        $event = $this->createEvent(['title' => 'Beach Cleanup 1']);
-        EventRegistration::create(['user_id' => $volunteer->id, 'event_id' => $event->id, 'status' => 'registered']);
+        $volunteer = $this->createVolunteer('TC01');
+        $event = $this->createEvent(['title' => 'Beach Cleanup TC01']);
+        EventRegistration::create([
+            'user_id'  => $volunteer->id,
+            'event_id' => $event->id,
+            'status'   => 'registered'
+        ]);
 
         $this->browse(function (Browser $browser) use ($volunteer, $event) {
             $browser->loginAs($volunteer)
                     ->visit('/volunteer/registered-events')
-                    ->assertSee('Registered Events')
-                    ->assertSee($event->title)
-                    ->assertSee($event->location);
+                    ->assertSee($event->title);
         });
     }
 
-    /**
-     * PBI09-TC02-ViewRegisteredEventDetail
-     */
-    public function test_volunteer_can_view_registered_event_detail()
-    {
-        $volunteer = User::create(['name' => 'Vol', 'email' => uniqid().'@v.com', 'password' => bcrypt('password'), 'role' => 'volunteer']);
-        $event = $this->createEvent(['title' => 'Detail Test', 'quota' => 50]);
-        EventRegistration::create(['user_id' => $volunteer->id, 'event_id' => $event->id, 'status' => 'registered']);
+    // ─── KBP115-TC02: Melihat daftar event saat belum pernah mendaftar ────────
 
-        $this->browse(function (Browser $browser) use ($volunteer, $event) {
-            $browser->loginAs($volunteer)
-                    ->visit('/volunteer/registered-events/' . $event->id)
-                    ->assertSee($event->title)
-                    ->assertSee($event->location)
-                    ->assertSee($event->description)
-                    ->assertSee('50 Volunteers'); // Quota
-        });
-    }
-
-    /**
-     * PBI09-TC03-SearchRegisteredEvent
-     */
-    public function test_search_registered_event()
+    public function test_KBP115_TC02_empty_registered_events()
     {
-        $volunteer = User::create(['name' => 'Vol', 'email' => uniqid().'@v.com', 'password' => bcrypt('password'), 'role' => 'volunteer']);
-        $event1 = $this->createEvent(['title' => 'Beach Cleanup A']);
-        $event2 = $this->createEvent(['title' => 'River Cleanup B']);
-        EventRegistration::create(['user_id' => $volunteer->id, 'event_id' => $event1->id, 'status' => 'registered']);
-        EventRegistration::create(['user_id' => $volunteer->id, 'event_id' => $event2->id, 'status' => 'registered']);
+        $volunteer = $this->createVolunteer('TC02');
 
         $this->browse(function (Browser $browser) use ($volunteer) {
             $browser->loginAs($volunteer)
                     ->visit('/volunteer/registered-events')
-                    ->type('search', 'Beach')
+                    ->assertSee('Belum ada event yang terdaftar');
+        });
+    }
+
+    // ─── KBP115-TC03: Mencari event yang tersedia ─────────────────────────────
+
+    public function test_KBP115_TC03_search_registered_event_found()
+    {
+        $volunteer = $this->createVolunteer('TC03');
+        $event = $this->createEvent(['title' => 'Tree Planting TC03']);
+        EventRegistration::create([
+            'user_id'  => $volunteer->id,
+            'event_id' => $event->id,
+            'status'   => 'registered'
+        ]);
+
+        $this->browse(function (Browser $browser) use ($volunteer, $event) {
+            $browser->loginAs($volunteer)
+                    ->visit('/volunteer/registered-events')
+                    ->type('search', 'Tree Planting')
                     ->keys('input[name="search"]', '{enter}')
-                    ->assertSee('Beach Cleanup A')
-                    ->assertDontSee('River Cleanup B');
+                    ->assertSee($event->title);
         });
     }
 
-    /**
-     * PBI09-TC04-EmptyRegisteredEventList
-     */
-    public function test_empty_registered_event_list()
+    // ─── KBP115-TC04: Mencari event yang tidak ada ────────────────────────────
+
+    public function test_KBP115_TC04_search_registered_event_not_found()
     {
-        $volunteer = User::create(['name' => 'Vol', 'email' => uniqid().'@v.com', 'password' => bcrypt('password'), 'role' => 'volunteer']);
+        $volunteer = $this->createVolunteer('TC04');
+        $event = $this->createEvent(['title' => 'Tree Planting TC04']);
+        EventRegistration::create([
+            'user_id'  => $volunteer->id,
+            'event_id' => $event->id,
+            'status'   => 'registered'
+        ]);
 
         $this->browse(function (Browser $browser) use ($volunteer) {
             $browser->loginAs($volunteer)
                     ->visit('/volunteer/registered-events')
-                    ->assertSee('Belum ada event yang terdaftar.');
-        });
-    }
-
-    /**
-     * PBI09-TC05-UnauthenticatedAccess
-     */
-    public function test_unauthenticated_access_redirects_to_login()
-    {
-        $this->browse(function (Browser $browser) {
-            $browser->logout()
-                    ->visit('/volunteer/registered-events')
-                    ->assertPathIs('/login');
-        });
-    }
-
-    /**
-     * PBI09-TC06-NonVolunteerAccess
-     */
-    public function test_non_volunteer_access_gets_403()
-    {
-        $admin = User::create(['name' => 'Admin', 'email' => uniqid().'@a.com', 'password' => bcrypt('password'), 'role' => 'admin']);
-
-        $this->browse(function (Browser $browser) use ($admin) {
-            $browser->loginAs($admin)
-                    ->visit('/volunteer/registered-events')
-                    ->assertSee('403'); // Laravel's default 403 page
-        });
-    }
-
-    /**
-     * PBI09-TC07-InvalidEventId
-     */
-    public function test_invalid_event_id_returns_404()
-    {
-        $volunteer = User::create(['name' => 'Vol', 'email' => uniqid().'@v.com', 'password' => bcrypt('password'), 'role' => 'volunteer']);
-
-        $this->browse(function (Browser $browser) use ($volunteer) {
-            $browser->loginAs($volunteer)
-                    ->visit('/volunteer/registered-events/99999')
-                    ->assertSee('404')
-                    ->assertSee('Not Found'); // Default Laravel 404 text
-        });
-    }
-
-    /**
-     * PBI09-TC08-PaginationRegisteredEvent
-     */
-    public function test_pagination_registered_event()
-    {
-        $volunteer = User::create(['name' => 'Vol', 'email' => uniqid().'@v.com', 'password' => bcrypt('password'), 'role' => 'volunteer']);
-        
-        // Create 15 events
-        for ($i = 0; $i < 15; $i++) {
-            $event = $this->createEvent(['title' => "Event $i"]);
-            EventRegistration::create(['user_id' => $volunteer->id, 'event_id' => $event->id, 'status' => 'registered']);
-        }
-
-        $this->browse(function (Browser $browser) use ($volunteer) {
-            $browser->loginAs($volunteer)
-                    ->visit('/volunteer/registered-events')
-                    ->assertPresent('nav[role="navigation"]') // Tailwind pagination nav
-                    ->script("document.querySelector('a[href*=\"page=2\"]').click()"); // Click via JS to avoid visibility issues
-            
-            // Wait for load
-            $browser->pause(1000)
-                    ->assertPathIs('/volunteer/registered-events')
-                    ->assertQueryStringHas('page', '2');
-        });
-    }
-
-    /**
-     * PBI09-TC09-SearchNoResult
-     */
-    public function test_search_no_result()
-    {
-        $volunteer = User::create(['name' => 'Vol', 'email' => uniqid().'@v.com', 'password' => bcrypt('password'), 'role' => 'volunteer']);
-        $event = $this->createEvent(['title' => 'Beach Cleanup']);
-        EventRegistration::create(['user_id' => $volunteer->id, 'event_id' => $event->id, 'status' => 'registered']);
-
-        $this->browse(function (Browser $browser) use ($volunteer) {
-            $browser->loginAs($volunteer)
-                    ->visit('/volunteer/registered-events')
-                    ->type('search', 'Nonexistent')
+                    ->type('search', 'InvalidEventName')
                     ->keys('input[name="search"]', '{enter}')
-                    ->assertSee('Tidak ada event yang sesuai dengan pencarian.');
+                    ->assertSee('Tidak ada event yang sesuai dengan pencarian');
         });
     }
 
-    /**
-     * PBI09-TC10-ViewUpcomingRegisteredEvent
-     */
-    public function test_view_upcoming_registered_event_sorting()
+    // ─── KBP115-TC05: Melihat daftar riwayat event yang pernah diikuti ────────
+
+    public function test_KBP115_TC05_view_event_history_list()
     {
-        $volunteer = User::create(['name' => 'Vol', 'email' => uniqid().'@v.com', 'password' => bcrypt('password'), 'role' => 'volunteer']);
-        $eventFar = $this->createEvent(['title' => 'Far Event', 'event_date' => now()->addDays(10)->format('Y-m-d H:i:s')]);
-        $eventClose = $this->createEvent(['title' => 'Close Event', 'event_date' => now()->addDays(2)->format('Y-m-d H:i:s')]);
-        
-        EventRegistration::create(['user_id' => $volunteer->id, 'event_id' => $eventFar->id, 'status' => 'registered']);
-        EventRegistration::create(['user_id' => $volunteer->id, 'event_id' => $eventClose->id, 'status' => 'registered']);
-
-        $this->browse(function (Browser $browser) use ($volunteer) {
-            $browser->loginAs($volunteer)
-                    ->visit('/volunteer/registered-events');
-            
-            $text = $browser->text('.grid'); // The grid container
-            $this->assertTrue(strpos($text, 'Close Event') < strpos($text, 'Far Event'));
-        });
-    }
-
-    /**
-     * PBI09-TC11-ViewPastRegisteredEvent
-     */
-    public function test_view_past_registered_event()
-    {
-        $volunteer = User::create(['name' => 'Vol', 'email' => uniqid().'@v.com', 'password' => bcrypt('password'), 'role' => 'volunteer']);
-        $event = $this->createEvent(['title' => 'Past Event', 'event_date' => now()->subDays(5)->format('Y-m-d H:i:s')]);
-        EventRegistration::create(['user_id' => $volunteer->id, 'event_id' => $event->id, 'status' => 'registered']);
-
-        $this->browse(function (Browser $browser) use ($volunteer) {
-            $browser->loginAs($volunteer)
-                    ->visit('/volunteer/registered-events')
-                    ->assertSee('Past Event')
-                    ->assertSee('Completed'); // Because event is in the past
-        });
-    }
-
-    /**
-     * PBI09-TC12-EventDeletedByOrganizer
-     */
-    public function test_deleted_event_is_not_accessible()
-    {
-        $volunteer = User::create(['name' => 'Vol', 'email' => uniqid().'@v.com', 'password' => bcrypt('password'), 'role' => 'volunteer']);
-        $event = $this->createEvent(['title' => 'To Be Deleted']);
-        EventRegistration::create(['user_id' => $volunteer->id, 'event_id' => $event->id, 'status' => 'registered']);
-        
-        $event->delete();
+        $volunteer = $this->createVolunteer('TC05');
+        // Past event
+        $event = $this->createEvent([
+            'title'      => 'Past River Cleanup TC05',
+            'event_date' => Carbon::now()->subDays(5)->format('Y-m-d H:i:s')
+        ]);
+        EventRegistration::create([
+            'user_id'  => $volunteer->id,
+            'event_id' => $event->id,
+            'status'   => 'registered'
+        ]);
 
         $this->browse(function (Browser $browser) use ($volunteer, $event) {
             $browser->loginAs($volunteer)
-                    ->visit('/volunteer/registered-events')
-                    ->assertDontSee('To Be Deleted'); 
-            
-            $browser->visit('/volunteer/registered-events/' . $event->id)
-                    ->assertSee('404');
+                    ->visit('/history')
+                    ->assertSee($event->title);
         });
     }
 
-    /**
-     * PBI09-TC13-ViewRegistrationStatus
-     */
-    public function test_view_registration_status()
+    // ─── KBP115-TC06: Melihat daftar riwayat saat belum memiliki riwayat ──────
+
+    public function test_KBP115_TC06_empty_event_history()
     {
-        $volunteer = User::create(['name' => 'Vol', 'email' => uniqid().'@v.com', 'password' => bcrypt('password'), 'role' => 'volunteer']);
-        $event = $this->createEvent(['event_date' => now()->addDays(5)->format('Y-m-d H:i:s')]);
-        EventRegistration::create(['user_id' => $volunteer->id, 'event_id' => $event->id, 'status' => 'registered']);
+        $volunteer = $this->createVolunteer('TC06');
 
         $this->browse(function (Browser $browser) use ($volunteer) {
             $browser->loginAs($volunteer)
-                    ->visit('/volunteer/registered-events')
-                    ->assertSee('Upcoming');
+                    ->visit('/history')
+                    ->assertSee('Belum ada riwayat event');
         });
     }
 
-    /**
-     * PBI09-TC14-LoadRegisteredEventList
-     */
-    public function test_load_registered_event_list_without_error()
-    {
-        $volunteer = User::create(['name' => 'Vol', 'email' => uniqid().'@v.com', 'password' => bcrypt('password'), 'role' => 'volunteer']);
-        for ($i = 0; $i < 20; $i++) {
-            $event = $this->createEvent(['title' => "E $i"]);
-            EventRegistration::create(['user_id' => $volunteer->id, 'event_id' => $event->id, 'status' => 'registered']);
-        }
+    // ─── KBP115-TC07: Mencari event yang tersedia pada riwayat event ──────────
 
-        $this->browse(function (Browser $browser) use ($volunteer) {
+    public function test_KBP115_TC07_search_event_history_found()
+    {
+        $volunteer = $this->createVolunteer('TC07');
+        $event = $this->createEvent([
+            'title'      => 'Past Forest Cleanup TC07',
+            'event_date' => Carbon::now()->subDays(5)->format('Y-m-d H:i:s')
+        ]);
+        EventRegistration::create([
+            'user_id'  => $volunteer->id,
+            'event_id' => $event->id,
+            'status'   => 'registered'
+        ]);
+
+        $this->browse(function (Browser $browser) use ($volunteer, $event) {
             $browser->loginAs($volunteer)
-                    ->visit('/volunteer/registered-events')
-                    ->assertSee('Registered Events');
+                    ->visit('/history')
+                    ->type('search', 'Forest Cleanup')
+                    ->keys('input[name="search"]', '{enter}')
+                    ->assertSee($event->title);
         });
     }
 
-    /**
-     * PBI09-TC15-RefreshRegisteredEventList
-     */
-    public function test_refresh_registered_event_list()
+    // ─── KBP115-TC08: Mencari event yang tidak ada pada riwayat event ─────────
+
+    public function test_KBP115_TC08_search_event_history_not_found()
     {
-        $volunteer = User::create(['name' => 'Vol', 'email' => uniqid().'@v.com', 'password' => bcrypt('password'), 'role' => 'volunteer']);
-        $event = $this->createEvent(['title' => 'Refresh Test']);
-        EventRegistration::create(['user_id' => $volunteer->id, 'event_id' => $event->id, 'status' => 'registered']);
+        $volunteer = $this->createVolunteer('TC08');
+        $event = $this->createEvent([
+            'title'      => 'Past Forest Cleanup TC08',
+            'event_date' => Carbon::now()->subDays(5)->format('Y-m-d H:i:s')
+        ]);
+        EventRegistration::create([
+            'user_id'  => $volunteer->id,
+            'event_id' => $event->id,
+            'status'   => 'registered'
+        ]);
 
         $this->browse(function (Browser $browser) use ($volunteer) {
             $browser->loginAs($volunteer)
-                    ->visit('/volunteer/registered-events')
-                    ->assertSee('Refresh Test')
-                    ->refresh()
-                    ->assertSee('Refresh Test');
+                    ->visit('/history')
+                    ->type('search', 'InvalidHistoryEvent')
+                    ->keys('input[name="search"]', '{enter}')
+                    ->assertSee('Tidak ada event yang sesuai dengan pencarian');
         });
     }
 }

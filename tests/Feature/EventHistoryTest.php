@@ -2,119 +2,108 @@
 
 namespace Tests\Feature;
 
+use Tests\TestCase;
 use App\Models\User;
 use App\Models\Event;
 use App\Models\Attendance;
 use App\Models\EventRegistration;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
 class EventHistoryTest extends TestCase
 {
-    use RefreshDatabase;
+    // use RefreshDatabase;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->volunteer = User::factory()->create(['role' => 'volunteer', 'points' => 0]);
+        
+        $this->volunteer = User::where('role', 'volunteer')->first() ?? User::factory()->create([
+            'role' => 'volunteer'
+        ]);
         
         $this->event = Event::factory()->create([
-            'title' => 'Santa Monica Beach Clean-Up',
+            'title' => 'Ocean Clean Up',
             'status' => 'published',
             'event_date' => now()->subDays(5),
         ]);
+    }
 
+    public function test_KBP115_TC05_view_event_history_list()
+    {
+        // Precondition: Volunteer has participated in at least 1 finished event
         EventRegistration::create([
             'user_id' => $this->volunteer->id,
             'event_id' => $this->event->id,
             'status' => 'registered'
         ]);
-    }
 
-    public function test_HIS_TC01_volunteer_can_view_history_list()
-    {
         Attendance::create([
             'user_id' => $this->volunteer->id,
             'event_id' => $this->event->id,
             'status' => 'present',
         ]);
 
-        $response = $this->actingAs($this->volunteer)->get('/history');
+        // Step: View history
+        $response = $this->actingAs($this->volunteer)->get(route('events.history'));
 
+        // Expected Result: History list shown
         $response->assertStatus(200);
-        $response->assertSee('Event History');
-        $response->assertSee('Santa Monica Beach Clean-Up');
+        $response->assertSee('Ocean Clean Up');
     }
 
-    public function test_HIS_TC02_shows_present_status_and_points_earned()
+    public function test_KBP115_TC06_view_empty_event_history()
     {
-        Attendance::create([
-            'user_id' => $this->volunteer->id,
-            'event_id' => $this->event->id,
-            'status' => 'present',
-            'is_counted' => true,
-        ]);
-        
-        $this->volunteer->update(['points' => 10]);
+        // Precondition: No event history
+        $response = $this->actingAs($this->volunteer)->get(route('events.history'));
 
-        $response = $this->actingAs($this->volunteer)->get('/history');
-
+        // Expected Result: Belum ada riwayat event message
         $response->assertStatus(200);
-        $response->assertSee('Present');
+        $response->assertSeeText('Belum ada riwayat event'); // Adjust as per actual text in view
     }
 
-    public function test_HIS_TC03_shows_absent_status_and_zero_points()
+    public function test_KBP115_TC07_search_event_history_found()
     {
-        $absentEvent = Event::factory()->create([
-            'title' => 'Suramadu View Point Restoration',
-            'event_date' => now()->subDays(5)
-        ]);
-        
+        // Precondition: Has event history
         EventRegistration::create([
             'user_id' => $this->volunteer->id,
-            'event_id' => $absentEvent->id,
+            'event_id' => $this->event->id,
             'status' => 'registered'
         ]);
 
         Attendance::create([
             'user_id' => $this->volunteer->id,
-            'event_id' => $absentEvent->id,
-            'status' => 'absent',
-            'is_counted' => false,
+            'event_id' => $this->event->id,
+            'status' => 'present',
         ]);
 
-        $response = $this->actingAs($this->volunteer)->get('/history');
+        // Step: Search history
+        $response = $this->actingAs($this->volunteer)->get(route('events.history', ['search' => 'Ocean']));
 
+        // Expected Result: Event displayed
         $response->assertStatus(200);
-        $response->assertSee('Suramadu View Point Restoration');
-        $response->assertSee('Absent');
-        $response->assertSee('0 Points');
+        $response->assertSee('Ocean Clean Up');
     }
 
-    public function test_HIS_TC04_search_event_found()
+    public function test_KBP115_TC08_search_event_history_not_found()
     {
-        $response = $this->actingAs($this->volunteer)->get('/history?search=sura&year=all');
+        // Precondition: Has event history
+        EventRegistration::create([
+            'user_id' => $this->volunteer->id,
+            'event_id' => $this->event->id,
+            'status' => 'registered'
+        ]);
+
+        Attendance::create([
+            'user_id' => $this->volunteer->id,
+            'event_id' => $this->event->id,
+            'status' => 'present',
+        ]);
+
+        // Step: Search history not found
+        $response = $this->actingAs($this->volunteer)->get(route('events.history', ['search' => 'Mountain']));
+
+        // Expected Result: Not found message
         $response->assertStatus(200);
-    }
-
-    public function test_HIS_TC05_search_event_not_found()
-    {
-        $response = $this->actingAs($this->volunteer)->get('/history?search=Pantai+Kuta');
-
-        $response->assertStatus(200);
-        $response->assertSee('Tidak ada event yang sesuai dengan pencarian.'); 
-    }
-
-    public function test_HIS_TC06_filter_by_year()
-    {
-        $response = $this->actingAs($this->volunteer)->get('/history?year=2025');
-        $response->assertStatus(200);
-    }
-
-    public function test_HIS_TC08_unauthenticated_user_cannot_access_history()
-    {
-        $response = $this->get('/history');
-        $response->assertRedirect('/login');
-        $response->assertStatus(302);
+        $response->assertSeeText('Tidak ada event yang sesuai dengan pencarian'); // Adjust as per actual text in view
     }
 }

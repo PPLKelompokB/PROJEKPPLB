@@ -187,7 +187,7 @@
 
                 <button type="submit" name="action" value="publish"
                     class="px-6 py-2.5 bg-black text-white rounded-md font-medium text-sm hover:bg-gray-800 transition">
-                    @if($event->status === 'draft') Publish Event @else Edit Event @endif
+                    @if($event->status === 'draft') Publish Event @else Update Event @endif
                 </button>
             </div>
 

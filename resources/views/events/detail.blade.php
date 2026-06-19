@@ -60,7 +60,7 @@
                             <form id="deleteEventForm" action="{{ route('events.destroy', $event->id) }}" method="POST">
                                 @csrf
                                 @method('DELETE')
-                                <button type="button" onclick="openDeleteModal()" class="bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded-lg text-xs font-medium transition">Hapus Event</button>
+                                <button type="button" onclick="openDeleteModal()" class="bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded-lg text-xs font-medium transition">Delete Event</button>
                             </form>
                         </div>
                         @endif
@@ -298,7 +298,7 @@
                 Cancel
             </button>
             <button type="button" onclick="submitDelete()" class="flex-1 py-2.5 bg-red-600 rounded-lg text-sm font-medium text-white hover:bg-red-700 transition">
-                Hapus Event
+                Confirm Delete
             </button>
         </div>
     </div>
